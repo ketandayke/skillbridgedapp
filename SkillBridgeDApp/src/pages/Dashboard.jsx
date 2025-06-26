@@ -1,0 +1,205 @@
+// src/pages/Dashboard.jsx
+import React, { useState, useEffect } from 'react';
+import { useWeb3 } from '../context/Web3Context';
+import { useNavigate } from 'react-router-dom';
+import { 
+  BookOpen, 
+  Award, 
+  Coins, 
+  TrendingUp, 
+  Play, 
+  Star, 
+  Clock, 
+  Users,
+  ShoppingCart,
+  Trophy,
+  Target,
+  CheckCircle
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import AdminPanel from '../components/AdminPanel'; // Adjust path as needed
+import StatsCards from "../components/Dashboard/StatsCards";
+import CourseList from "../components/Dashboard/CourseList";
+import QuickActions from "../components/Dashboard/QuickActions";
+
+
+const Dashboard = () => {
+  const { 
+    account, 
+    getUserData, 
+    enrollInCourse, 
+    getTokenBalance, 
+    getAllCourses,
+    hasAccessToCourse,
+    tokenBalance,
+    refreshTokenBalance
+  } = useWeb3();
+  
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
+  const [currentTokenBalance, setCurrentTokenBalance] = useState(0);
+  const [allCourses, setAllCourses] = useState([]);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [completedCourses, setCompletedCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [purchaseLoading, setPurchaseLoading] = useState({});
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      if (account) {
+        setLoading(true);
+        try {
+          // Fetch user data from blockchain
+          const [userDataFromChain, balance, coursesFromChain] = await Promise.all([
+            getUserData(),
+            getTokenBalance(),
+            getAllCourses()
+          ]);
+
+          setUserData(userDataFromChain);
+          setCurrentTokenBalance(parseFloat(balance) || 0);
+          // setAllCourses(coursesFromChain);
+
+          // Check enrollment status for each course
+          const enrollmentPromises = coursesFromChain.map(async (course) => {
+            const hasAccess = await hasAccessToCourse(account, course.courseId);
+            return { ...course, isEnrolled: hasAccess };
+          });
+
+          const coursesWithEnrollment = await Promise.all(enrollmentPromises);
+          setAllCourses(coursesWithEnrollment); // ✅ correctly set enriched data
+          console.log("all courses",allCourses);
+          console.log("this is courses with enrollemnt",coursesWithEnrollment)
+          // Separate enrolled and available courses
+          const enrolled = coursesWithEnrollment.filter(course => course.isEnrolled);
+          const available = coursesWithEnrollment.filter(course => !course.isEnrolled);
+          
+          setEnrolledCourses(enrolled);
+          
+          // For now, we'll assume completed courses are tracked separately
+          // You might want to add a completion tracking mechanism in your smart contract
+          setCompletedCourses([]); // This would need to be implemented in the smart contract
+          
+        } catch (error) {
+          console.error('Error fetching dashboard data:', error);
+          toast.error('Error loading dashboard data');
+        }
+        setLoading(false);
+      }
+    };
+
+    fetchAllData();
+  }, [account, getUserData, getTokenBalance, getAllCourses, hasAccessToCourse]);
+
+  // Also update when tokenBalance changes from Web3Context
+  useEffect(() => {
+    if (tokenBalance) {
+      setCurrentTokenBalance(parseFloat(tokenBalance) || 0);
+    }
+  }, [tokenBalance]);
+
+  const handleEnrollInCourse = async (courseId, price) => {
+    if (currentTokenBalance < price) {
+      toast.error(`Insufficient tokens. You need ${price} SKL tokens.`);
+      return;
+    }
+
+    setPurchaseLoading({ ...purchaseLoading, [courseId]: true });
+    try {
+      await enrollInCourse(courseId);
+      toast.success('Successfully enrolled in course!');
+      
+      // Refresh data after enrollment
+      await refreshTokenBalance();
+      const updatedUserData = await getUserData();
+      setUserData(updatedUserData);
+      
+      // Update course enrollment status
+      const updatedCourses = allCourses.map(course => {
+        if (course.courseId === courseId) {
+          return { ...course, isEnrolled: true };
+        }
+        return course;
+      });
+      
+      setAllCourses(updatedCourses);
+      setEnrolledCourses(prev => [...prev, updatedCourses.find(c => c.courseId === courseId)]);
+      
+    } catch (error) {
+      console.error('Error enrolling in course:', error);
+      toast.error('Failed to enroll in course');
+    }
+    setPurchaseLoading({ ...purchaseLoading, [courseId]: false });
+  };
+
+  if (!account) {
+    return (
+      <div className="dashboard-full-width w-full min-h-screen p-6 text-center text-red-400">
+        <div className="w-full mx-auto mt-20">
+          <Trophy size={48} className="mx-auto mb-4 text-red-400" />
+          <h2 className="text-xl font-bold mb-2">Access Denied</h2>
+          <p>Please connect your wallet to access your dashboard.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="dashboard-full-width w-full min-h-screen p-6 text-center text-cyan-400">
+        <div className="w-full mx-auto mt-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+          <p>Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className=" w-full min-h-screen p-6 text-white">
+      {/* Header */}
+      <AdminPanel />
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Welcome back!</h1>
+          <p className="text-gray-400 mt-1">Continue your learning journey</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg">
+            <Coins size={20} className="text-yellow-400" />
+            <span className="font-semibold">{currentTokenBalance.toFixed(2)} SBT</span>
+          </div>
+          <button 
+            onClick={() => navigate('/profile')}
+            className="px-4 py-2 bg-cyan-600 rounded-lg hover:bg-cyan-700 transition-colors"
+          >
+            View Profile
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <StatsCards userData={userData} enrolledCount={enrolledCourses.length} />
+
+      <CourseList 
+        courses={enrolledCourses} 
+        type="enrolled" 
+        onEnroll={handleEnrollInCourse} 
+      />
+
+      <CourseList 
+        courses={allCourses.filter(course => !course.isEnrolled).slice(0, 4)}
+        type="available"
+        onEnroll={handleEnrollInCourse}
+        currentTokenBalance={currentTokenBalance}
+        purchaseLoading={purchaseLoading}
+      />
+
+      <QuickActions hasCompletedTest={userData?.hasCompletedTest} />
+
+
+    </div>
+  );
+};
+
+export default Dashboard;
