@@ -22,30 +22,37 @@ const CourseDetail = () => {
   const { getCourseDetails, hasAccessToCourse, account, enrollInCourse,getCertifiatesNFTID } = useWeb3();
   const BACKEND_URL=import.meta.env.VITE_BACKEND_URL;
  // 1. First Effect: Load Course
-useEffect(() => {
+ useEffect(() => {
   const loadCourse = async () => {
     try {
       const details = await getCourseDetails(id);
       const enrolled = await hasAccessToCourse(account, id);
       setCourseData(details);
       setIsEnrolled(enrolled);
-  
+
       const nftId = await getCertifiatesNFTID({ account, courseId: id });
-      console.log("this is nftid",nftId);
-      const numericId = Number(nftId);
-      setHasCompletedCourse(numericId>=0);
-  
-      if (details.descriptionCid)
+      console.log("this is nftId:", nftId);
+
+      if (nftId !== null && !isNaN(nftId)) {
+        const numericId = Number(nftId);
+        setHasCompletedCourse(numericId >= 0);
+      } else {
+        setHasCompletedCourse(false);
+      }
+
+      if (details.descriptionCid) {
         setDescription(await fetchTextFromCid(details.descriptionCid));
-      if (details.prerequisitesCid)
+      }
+      if (details.prerequisitesCid) {
         setPrerequisites(await fetchTextFromCid(details.prerequisitesCid));
-      if (details.learningOutcomesCid)
+      }
+      if (details.learningOutcomesCid) {
         setOutcomes(await fetchTextFromCid(details.learningOutcomesCid));
+      }
     } catch (err) {
       console.error("Error loading course", err);
     }
   };
-  
 
   if (id && account) loadCourse();
 }, [id, account]);

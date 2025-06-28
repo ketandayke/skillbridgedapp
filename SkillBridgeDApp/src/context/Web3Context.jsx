@@ -772,52 +772,71 @@ const transferTokens = async (to, amount) => {
       try {
         const nftId = await skillBridgeMainContract.userCourseCertificates(account, courseId);
         const numericId = Number(nftId);
-    
-        console.log(`NFT ID for course ${courseId}:`, numericId);
-    
-        // ✅ Do not skip ID 0 — allow any valid NFT
-        if (numericId >= 0) {
-          const tokenUri = await skillBridgeNFTContract.tokenURI(numericId);
-          const ipfsCid = tokenUri.includes("ipfs/") ? tokenUri.split("ipfs/")[1] : tokenUri;
-          const metadata = await axios.get(`https://gateway.pinata.cloud/ipfs/${ipfsCid}`);
-          console.log("this is metadata",metadata);
-          const courseAttr = metadata.data.attributes?.find(attr => attr.trait_type === "Course")?.value;
-          const dateAttr = metadata.data.attributes?.find(attr => attr.trait_type === "Date")?.value;
-          const displayDate = dateAttr ? new Date(dateAttr).toLocaleDateString() : "Date Unavailable";
-
-          nftList.push({
-            id: nftId.toString(),
-            name: metadata.data.name || "SkillBridge Certificate",
-            course: courseAttr || `Course #${courseId}`,
-            date: displayDate,
-            uri: tokenUri,
-            image: metadata.data.image // optional: for showing certificate image
-          });
-
-          
+  
+        // Skip if tokenId is 0 AND account is not the owner
+        const owner = await skillBridgeNFTContract.ownerOf(nftId);
+        if (owner.toLowerCase() !== account.toLowerCase()) {
+          console.warn(`⛔ Skipping NFT ID ${nftId} not owned by account ${account}`);
+          continue;
         }
+  
+        const tokenUri = await skillBridgeNFTContract.tokenURI(numericId);
+        const ipfsCid = tokenUri.includes("ipfs/") ? tokenUri.split("ipfs/")[1] : tokenUri;
+        const metadata = await axios.get(`https://gateway.pinata.cloud/ipfs/${ipfsCid}`);
+        console.log("📦 NFT Metadata:", metadata);
+  
+        const courseAttr = metadata.data.attributes?.find(attr => attr.trait_type === "Course")?.value;
+        const dateAttr = metadata.data.attributes?.find(attr => attr.trait_type === "Date")?.value;
+        const displayDate = dateAttr ? new Date(dateAttr).toLocaleDateString() : "Date Unavailable";
+  
+        nftList.push({
+          id: nftId.toString(),
+          name: metadata.data.name || "SkillBridge Certificate",
+          course: courseAttr || `Course #${courseId}`,
+          date: displayDate,
+          uri: tokenUri,
+          image: metadata.data.image
+        });
+  
       } catch (err) {
         console.error("❌ Failed to fetch NFT for course:", courseId, err);
       }
     }
-    
-    
   
     return nftList;
   };
-  const getCertifiatesNFTID=async({account,courseId})=>{
-    if(!account||!courseId){
-      console.warn("missing useraddress or courseId");
-      return;
-    }
-    if(!contracts.skillBridge){
-      console.warn("missing skillbrdige contract");
-      return;
-    }
-    const nftId=await contracts.skillBridge.getCertificateNftId(account,courseId);
-    return nftId;
 
-  }
+  const getCertifiatesNFTID = async ({ account, courseId }) => {
+    if (!account || !courseId) {
+      console.warn("⚠️ Missing user address or courseId");
+      return null;
+    }
+  
+    const skillBridgeMainContract = contracts.skillBridge;
+    const skillBridgeNFTContract = contracts.nft;
+  
+    if (!skillBridgeMainContract || !skillBridgeNFTContract) {
+      console.warn("⚠️ Missing contract instances");
+      return null;
+    }
+  
+    try {
+      const nftId = await skillBridgeMainContract.getCertificateNftId(account, courseId);
+      const owner = await skillBridgeNFTContract.ownerOf(nftId);
+  
+      if (owner.toLowerCase() !== account.toLowerCase()) {
+        console.warn(`⛔ NFT ID ${nftId} does not belong to ${account}`);
+        return null;
+      }
+  
+      return nftId;
+    } catch (err) {
+      console.error(`❌ Failed to fetch certificate NFT ID for user ${account}, course ${courseId}`, err);
+      return null;
+    }
+  };
+  
+  
   
 
   // Auto-refresh token balance periodically
