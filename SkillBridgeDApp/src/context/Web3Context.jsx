@@ -805,6 +805,19 @@ const transferTokens = async (to, amount) => {
   
     return nftList;
   };
+  const getCertifiatesNFTID=async({account,courseId})=>{
+    if(!account||!courseId){
+      console.warn("missing useraddress or courseId");
+      return;
+    }
+    if(!contracts.skillBridge){
+      console.warn("missing skillbrdige contract");
+      return;
+    }
+    const nftId=await contracts.skillBridge.getCertificateNftId(account,courseId);
+    return nftId;
+
+  }
   
 
   // Auto-refresh token balance periodically
@@ -929,7 +942,8 @@ const transferTokens = async (to, amount) => {
     transferTokens,
     markCourseAsCompleted,
     getEnrolledStudents,
-    getUserCertificates
+    getUserCertificates,
+    getCertifiatesNFTID
   };
 
   return (

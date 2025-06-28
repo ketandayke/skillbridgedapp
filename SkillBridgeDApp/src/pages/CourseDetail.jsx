@@ -18,43 +18,55 @@ const CourseDetail = () => {
   const [description, setDescription] = useState("");
   const [prerequisites, setPrerequisites] = useState('');
   const [outcomes, setOutcomes] = useState('');
-  const { getCourseDetails, hasAccessToCourse, account, enrollInCourse } = useWeb3();
+  const [hasCompletedCourse, setHasCompletedCourse] = useState(false);
+  const { getCourseDetails, hasAccessToCourse, account, enrollInCourse,getCertifiatesNFTID } = useWeb3();
   const BACKEND_URL=import.meta.env.VITE_BACKEND_URL;
-  useEffect(() => {
-    const loadCourse = async () => {
-      try {
-        const details = await getCourseDetails(id);
-        const enrolled = await hasAccessToCourse(account, id);
-        setCourseData(details);
-        setIsEnrolled(enrolled);
-
-        if (details.descriptionCid)
+ // 1. First Effect: Load Course
+useEffect(() => {
+  const loadCourse = async () => {
+    try {
+      const details = await getCourseDetails(id);
+      const enrolled = await hasAccessToCourse(account, id);
+      setCourseData(details);
+      setIsEnrolled(enrolled);
+  
+      const nftId = await getCertifiatesNFTID({ account, courseId: id });
+      console.log("this is nftid",nftId);
+      const numericId = Number(nftId);
+      setHasCompletedCourse(numericId>=0);
+  
+      if (details.descriptionCid)
         setDescription(await fetchTextFromCid(details.descriptionCid));
       if (details.prerequisitesCid)
         setPrerequisites(await fetchTextFromCid(details.prerequisitesCid));
       if (details.learningOutcomesCid)
         setOutcomes(await fetchTextFromCid(details.learningOutcomesCid));
-      } catch (err) {
-        console.error("Error loading course", err);
-      }
-    };
-
-    const loadVectorInfo = async () => {
-      try {
-        const { data } = await axios.get(`${BACKEND_URL}/api/vector/courses/info/${id}`);
-        console.log("this is data of course info",data);
-        setVectorInfo(data);
-        
-      } catch (err) {
-        console.error("Vector DB info fetch failed", err);
-      }
-    };
-
-    if (id && account) {
-      loadCourse();
-      loadVectorInfo();
+    } catch (err) {
+      console.error("Error loading course", err);
     }
-  }, [id, account]);
+  };
+  
+
+  if (id && account) loadCourse();
+}, [id, account]);
+
+// 2. Second Effect: Load Vector Info AFTER courseData is ready
+useEffect(() => {
+  const loadVectorInfo = async () => {
+    try {
+      if (courseData && courseData.metadataCid) {
+        const { data } = await axios.get(`${BACKEND_URL}/api/vector/courses/info/${courseData.metadataCid}`);
+        console.log("Vector Info:", data);
+        setVectorInfo(data);
+      }
+    } catch (err) {
+      console.error("Vector DB info fetch failed", err);
+    }
+  };
+
+  loadVectorInfo();
+}, [courseData]);
+
 
   const handleEnrollment = async () => {
     if (!courseData) return;
@@ -180,17 +192,33 @@ const CourseDetail = () => {
               <p className="text-gray-300 whitespace-pre-wrap">{outcomes}</p>
             </div>
 
-            {/* Mark Completed Button */}
-              {isEnrolled && (
-                <div className="text-center">
-                  <button
-                    onClick={handleMarkCompleted}
-                    className="mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white font-semibold"
-                  >
-                    Mark Completed & Attempt Quiz
-                  </button>
-                </div>
-              )}
+            {/* Mark Completed Button or Certificate Message */}
+            {isEnrolled && !hasCompletedCourse ? (
+              <div className="text-center">
+                <button
+                  onClick={handleMarkCompleted}
+                  className="mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white font-semibold"
+                >
+                  Mark Completed & Attempt Quiz
+                </button>
+              </div>
+            ) : (
+              <div className="text-center bg-green-800/30 p-6 rounded-xl border border-green-500 mt-4 space-y-3">
+                <h2 className="text-xl font-bold text-green-300">🎉 Congratulations!</h2>
+                <p className="text-green-200">
+                  You have successfully completed this course.
+                  <br />
+                  Your NFT Certificate is available in your <strong>Profile</strong> section.
+                </p>
+                <button
+                  onClick={() => navigate("/profile")}
+                  className="mt-3 px-5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold"
+                >
+                  Go to Profile
+                </button>
+              </div>
+            )}
+
             </div>
 
           

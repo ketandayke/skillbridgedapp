@@ -4,7 +4,7 @@ import axios from "axios";
 // Configuration
 const CHROMA_TENANT = process.env.CHROMA_TENANT || "default_tenant";
 const CHROMA_DATABASE = process.env.CHROMA_DATABASE || "default_database";
-const CHROMA_BASE_URL = process.env.CHROMA_BASE_URL || "http://localhost:5000";
+const CHROMA_BASE_URL = process.env.CHROMA_BASE_URL || "http://localhost:8000";
 const CHROMA_API_ROOT = `${CHROMA_BASE_URL}/api/v2/tenants/${CHROMA_TENANT}/databases/${CHROMA_DATABASE}`;
 
 console.log("Chroma API Root:", CHROMA_API_ROOT);
