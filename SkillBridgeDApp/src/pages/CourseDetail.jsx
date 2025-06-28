@@ -33,13 +33,13 @@ const CourseDetail = () => {
       const nftId = await getCertifiatesNFTID({ account, courseId: id });
       console.log("this is nftId:", nftId);
 
-      if (nftId !== null && !isNaN(nftId)) {
-        const numericId = Number(nftId);
-        setHasCompletedCourse(numericId >= 0);
+      if (nftId !== null) {
+        const idBigInt = BigInt(nftId);
+        setHasCompletedCourse(idBigInt >= 0n);
       } else {
         setHasCompletedCourse(false);
       }
-
+      
       if (details.descriptionCid) {
         setDescription(await fetchTextFromCid(details.descriptionCid));
       }
