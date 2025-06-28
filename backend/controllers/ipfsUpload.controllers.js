@@ -86,6 +86,7 @@ export const uploadCertificateToIPFS = async (req, res) => {
       name: `SkillBridge Certificate - ${quizResult.courseTitle}`,
       description: `Awarded to ${quizResult.userName} for scoring ${quizResult.percentage}%`,
       image: `ipfs://${imageCid}`,
+      userAddress:quizResult.userAddress,
       attributes: [
         { trait_type: 'Name', value: quizResult.userName },
         { trait_type: 'Score', value: `${quizResult.score}/${quizResult.total}` },
@@ -94,7 +95,8 @@ export const uploadCertificateToIPFS = async (req, res) => {
         { trait_type: 'Date', value: quizResult.completedAt },
       ],
     };
-
+    console.log("this is metadata",metadata);
+   
     const metadataCid = await pinata.uploadJSON(metadata, `certificate_metadata_${quizResult.userAddress}.json`);
     return res.json({ resultCid: metadataCid });
   } catch (err) {

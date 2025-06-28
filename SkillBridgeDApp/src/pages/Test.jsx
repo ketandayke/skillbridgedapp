@@ -7,7 +7,8 @@ import toast from 'react-hot-toast';
 import TestQuizQuestions from '../utils/TestQuizQuestions';
 import Loader from '../components/Loader';
 import { uploadCourseResult } from '../services/IpfsUploadService';
-import { fetchTextFromCid } from '../utils/ipfsFetcher';
+import axios from "axios";
+
 const Test = () => {
   const { account, completeTest, getUserData,getUserProfileCID, getCourseQuiz, markCourseAsCompleted } = useWeb3();
   const [searchParams] = useSearchParams();
@@ -133,8 +134,18 @@ const handleMintCertificate = async () => {
   try {
     setLoading(true);
 
-    const profileCid = await getUserProfileCID();
-    const profile=await fetchTextFromCid(profileCid);
+    const cid = await getUserProfileCID(account);
+    console.log("this is profile cide",cid);
+    let profile;
+    if(cid){
+      const ipfsURL = `https://gateway.pinata.cloud/ipfs/${cid}`;
+      const profileResponse = await axios.get(ipfsURL);
+      profile = profileResponse.data;
+
+    }
+   
+    console.log("this is profile",profile);
+    // const profile=await fetchTextFromCid(profileCid);
     const quizResult = {
       courseId,
       courseTitle,
@@ -147,11 +158,11 @@ const handleMintCertificate = async () => {
       percentage: finalPercentage,
       completedAt: new Date().toISOString(),
     };
-
-    const { resultCid } = await uploadCourseResult({ quizResult });
-
-    await markCourseAsCompleted(courseId, resultCid);
-    setCertificateCid(resultCid);
+    console.log('this is quiz result to send to backend',quizResult);
+    const resultCID = await uploadCourseResult({ quizResult });
+     console.log("this is resultcide and courseId and isenrolled",resultCID,courseId,isEnrolled);
+    await markCourseAsCompleted(courseId, resultCID);
+    setCertificateCid(resultCID);
     setShowMintButton(false);
     toast.success("\ud83d\udcdc Certificate minted successfully!");
   } catch (err) {
@@ -168,6 +179,7 @@ const handleMintCertificate = async () => {
       setTimeLeft(300);
       setHasStarted(false);
       setTestPassed(false);
+      setShowMintButton(false);
       setFinalPercentage(0);
     };
 
@@ -338,7 +350,7 @@ const handleMintCertificate = async () => {
           ) : (
             // Course Test Results
             <div className="space-y-6">
-              {testPassed&&showMintButton ? (
+              {testPassed ? (
                 // Passed Course Test
                 <div>
                   <CheckCircle size={48} className="mx-auto text-green-400 mb-4" />
@@ -365,13 +377,19 @@ const handleMintCertificate = async () => {
                   <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-xl p-6 border border-purple-500 mb-6">
                     <Trophy size={32} className="mx-auto text-yellow-400 mb-2" />
                     <h3 className="text-xl font-semibold text-purple-300 mb-2">Certificate Unlocked!</h3>
-                    <p className="text-gray-300 mb-4">You can now mint your course completion certificate as an NFT.</p>
-                    <button
-                      onClick={handleMintCertificate}
-                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-semibold text-white"
-                    >
-                      Mint Certificate NFT
-                    </button>
+                   {
+                    showMintButton?(
+                     <>
+                        <p className="text-gray-300 mb-4">You can now mint your course completion certificate as an NFT.</p>
+                      <button
+                        onClick={handleMintCertificate}
+                        className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-semibold text-white"
+                      >
+                        Mint Certificate NFT
+                      </button>
+                     </>
+                    ):(<p>Certificate minted successfully</p>)
+                   }
                   </div>
                 </div>
               ) : (

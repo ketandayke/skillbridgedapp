@@ -14,6 +14,7 @@ export const generateCertificateImage = async (quizResult) => {
         <h1>SkillBridge Certificate of Completion</h1>
         <p>This certifies that</p>
         <h2>${quizResult.userName}</h2>
+        <p>${quizResult.userAddress}</p>
         <p>has successfully completed</p>
         <h3>${quizResult.courseTitle}</h3>
         <p>with a score of ${quizResult.score}/${quizResult.total} (${quizResult.percentage.toFixed(1)}%)</p>

@@ -12,6 +12,7 @@ import CourseDetail from './pages/CourseDetail';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import BuyTokens from './pages/BuyTokens';
+import NFTCertificate from './pages/NFTCertificate';
 import './App.css';
 
 // Component to handle conditional padding
@@ -30,6 +31,8 @@ function MainContent() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/buy-tokens" element={<BuyTokens />} />
+        <Route path="/certificate/:cid" element={<NFTCertificate />} />
+
       </Routes>
     </main>
   );

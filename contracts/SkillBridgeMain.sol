@@ -12,6 +12,7 @@ contract SkillBridgeMain is Ownable {
 
     uint256 public nextCourseId;
     uint256 public constant TOKEN_PRICE = 0.0001 ether; // 1 token = 0.0001 ETH
+
     struct User {
         address wallet;
         uint256 testScore;
@@ -36,24 +37,23 @@ contract SkillBridgeMain is Ownable {
     mapping(address => uint256[]) public userCourses;
     mapping(address => uint256[]) public instructorCourses;
     mapping(address => string) public userProfileCid;
-
+    mapping(address => mapping(uint256 => uint256)) public userCourseCertificates;
 
     event TestCompleted(address indexed user, uint256 score, uint256 tokensEarned);
     event CourseCreated(uint256 indexed courseId, address indexed instructor, string title, uint256 price);
     event CourseEnrolled(address indexed student, uint256 indexed courseId, uint256 price);
     event CourseCompleted(address indexed student, uint256 indexed courseId, uint256 nftTokenId);
     event TokensPurchased(address indexed buyer, uint256 amount, uint256 ethPaid);
-    
-    constructor(address _sbtToken, address _nftContract, address initialOwner) Ownable(initialOwner) {
-    sbtToken = IERC20(_sbtToken);
-    nftCertificate = SkillBridgeNFT(_nftContract);
-    nextCourseId = 1;
-}
 
+    constructor(address _sbtToken, address _nftContract, address initialOwner) Ownable(initialOwner) {
+        sbtToken = IERC20(_sbtToken);
+        nftCertificate = SkillBridgeNFT(_nftContract);
+        nextCourseId = 1;
+    }
 
     function completeTest(uint256 _score) external {
         require(!users[msg.sender].hasCompletedTest, "Test already completed");
-        uint256 reward = _score * 1e18; // 1 SBT per score point
+        uint256 reward = _score * 1e18;
 
         users[msg.sender] = User({
             wallet: msg.sender,
@@ -90,28 +90,26 @@ contract SkillBridgeMain is Ownable {
         newCourse.createdAt = block.timestamp;
 
         instructorCourses[msg.sender].push(id);
-
         emit CourseCreated(id, msg.sender, _title, _price);
     }
 
     function enrollInCourse(uint256 _courseId) external {
-    Course storage course = courses[_courseId];
-    require(course.isActive, "Inactive course");
-    require(users[msg.sender].hasCompletedTest, "Test not completed");
+        Course storage course = courses[_courseId];
+        require(course.isActive, "Inactive course");
+        require(users[msg.sender].hasCompletedTest, "Test not completed");
 
-    uint256 price = course.price;
-    uint256 instructorShare = (price * 80) / 100;
-    uint256 platformShare = price - instructorShare; // 20%
+        uint256 price = course.price;
+        uint256 instructorShare = (price * 80) / 100;
+        uint256 platformShare = price - instructorShare;
 
-    // Transfer from user to instructor and platform (contract owner)
-    require(sbtToken.transferFrom(msg.sender, course.instructor, instructorShare), "Instructor payment failed");
-    require(sbtToken.transferFrom(msg.sender, owner(), platformShare), "Platform fee failed");
+        require(sbtToken.transferFrom(msg.sender, course.instructor, instructorShare), "Instructor payment failed");
+        require(sbtToken.transferFrom(msg.sender, owner(), platformShare), "Platform fee failed");
 
-    course.enrolledStudents.push(msg.sender);
-    userCourses[msg.sender].push(_courseId);
+        course.enrolledStudents.push(msg.sender);
+        userCourses[msg.sender].push(_courseId);
 
-    emit CourseEnrolled(msg.sender, _courseId, price);
-}
+        emit CourseEnrolled(msg.sender, _courseId, price);
+    }
 
     function completeCourse(uint256 _courseId, string memory _resultCID) external {
         require(hasAccessToCourse(msg.sender, _courseId), "Not enrolled");
@@ -119,6 +117,7 @@ contract SkillBridgeMain is Ownable {
         uint256 nftId = nftCertificate.mintCertificate(msg.sender, _resultCID);
         users[msg.sender].coursesCompleted++;
 
+        userCourseCertificates[msg.sender][_courseId] = nftId;
         emit CourseCompleted(msg.sender, _courseId, nftId);
     }
 
@@ -129,12 +128,12 @@ contract SkillBridgeMain is Ownable {
         }
         return false;
     }
+
     function buyTokens(uint256 amount) external payable {
         uint256 cost = TOKEN_PRICE * amount;
         require(msg.value == cost, "Incorrect ETH sent");
 
         require(sbtToken.transfer(msg.sender, amount * 1e18), "Token transfer failed");
-
         emit TokensPurchased(msg.sender, amount, msg.value);
     }
 
@@ -145,13 +144,22 @@ contract SkillBridgeMain is Ownable {
     function getInstructorCourses(address instructor) external view returns (uint256[] memory) {
         return instructorCourses[instructor];
     }
-     // 📝 Update profile CID (only user can update their own)
+
     function setProfileMetadata(string memory cid) external {
         userProfileCid[msg.sender] = cid;
     }
 
-    // 📦 View CID
     function getProfileMetadata(address user) external view returns (string memory) {
         return userProfileCid[user];
     }
-} 
+
+    // ✅ Allow frontend to fetch enrolled students list for any course
+    function getEnrolledStudents(uint256 courseId) external view returns (address[] memory) {
+        return courses[courseId].enrolledStudents;
+    }
+
+    // ✅ Allow frontend to fetch NFT ID for user & course
+    function getCertificateNftId(address user, uint256 courseId) external view returns (uint256) {
+        return userCourseCertificates[user][courseId];
+    }
+}

@@ -93,5 +93,6 @@ export const uploadProfileDetailsToIPFS = async ({ profileData }) => {
 
 export const uploadCourseResult=async({quizResult})=>{
   const result = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/ipfs/uploadQuizResult`, quizResult);
+  console.log("response from bakcned",result);
   return result.data.resultCid;
 }

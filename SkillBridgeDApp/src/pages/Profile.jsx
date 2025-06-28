@@ -15,6 +15,7 @@ const Profile = () => {
     getTokenBalance,
     getUserData,
     getUserProfileCID,
+    getUserCertificates
   } = useWeb3();
 
   const [userData, setUserData] = useState(null);
@@ -23,10 +24,23 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
 
   // 🎯 Example mock NFTs
-  const mockNFTs = [
-    { id: '1', name: 'React Master', course: 'Advanced React Patterns', rarity: 'Epic', date: '2025-01-15' },
-    { id: '2', name: 'Solidity Expert', course: 'Smart Contracts', rarity: 'Legendary', date: '2025-02-01' },
-  ];
+  const [certificates, setCertificates] = useState([]);
+
+  useEffect(() => {
+    const loadNFTs = async () => {
+      try {
+        console.log("📦 Calling getUserCertificates for:", account);
+        const result = await getUserCertificates(account);
+        console.log("this is result", result);
+        setCertificates(result);
+      } catch (e) {
+        console.error("❌ Failed to load user certificates:", e);
+      }
+    };
+  
+    if (account) loadNFTs();
+  }, [account]);
+  
 
   // 🎯 Example Achievements
   const getAchievements = () => [
@@ -134,7 +148,7 @@ const Profile = () => {
         </div>
         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
           <p className="text-sm text-gray-400 mb-1">NFTs Earned</p>
-          <p className="text-2xl font-bold text-purple-400">{mockNFTs.length}</p>
+          <p className="text-2xl font-bold text-purple-400">{certificates.length}</p>
         </div>
         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
           <p className="text-sm text-gray-400 mb-1">Test Score</p>
@@ -143,7 +157,7 @@ const Profile = () => {
       </div>
 
       {/* 🏆 NFT & Achievements */}
-      <NFTCollection nfts={mockNFTs} />
+      <NFTCollection nfts={certificates} />
       <Achievements achievements={getAchievements()} />
 
       {/* 🚀 Learning Progress */}

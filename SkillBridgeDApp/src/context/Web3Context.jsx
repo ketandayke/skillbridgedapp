@@ -4,14 +4,16 @@ import { ethers } from 'ethers';
 import toast from 'react-hot-toast';
 import SKILLBRIDGE_ABI from "../abi/SkillBridgeMain.json";
 import TOKEN_ABI from "../abi/SkillBridgeToken.json";
+import NFT_ABI from "../abi/SkillBridgeNFT.json";
 import { uploadProfileDetailsToIPFS } from '../services/IpfsUploadService';
 import { fetchTextFromCid } from '../utils/ipfsFetcher'; // adjust path if needed
+import axios from 'axios';
 
 // Contract addresses - UPDATE THESE AFTER DEPLOYMENT
 const CONTRACT_ADDRESSES = {
   SKILLBRIDGE_TOKEN: "0xc214a458456003FAAd6d06749E8609b066EB3495", // Replace with deployed token address
-  SKILLBRIDGE_NFT: "0x168C88A3A87F93C14274218d5F461bD1218fa646",   // Replace with deployed NFT address
-  SKILLBRIDGE_MAIN: "0x838CAF21DEf796Bb5ca0E42D2fFBdaC296De986c"
+  SKILLBRIDGE_NFT: "0xD8c55679f0fB9b7f36cB48e8b0AA24AeFD7354b2",   // Replace with deployed NFT address
+  SKILLBRIDGE_MAIN: "0x074615F39D2e8893640456B692609dDcdBB33E8e"
 };
 // const CONTRACT_ADDRESSES = {
 //   SKILLBRIDGE_TOKEN: "0xa255c9B103A7ad9D69faB4ea6dF6B6A30132fE2e", // Your new addresses
@@ -111,10 +113,16 @@ export const Web3Provider = ({ children }) => {
         TOKEN_ABI.abi,
         web3Signer
       );
+      const nftContract= new ethers.Contract(
+        CONTRACT_ADDRESSES.SKILLBRIDGE_NFT,
+        NFT_ABI.abi,
+        web3Signer
+      )
 
       setContracts({
         skillBridge: skillBridgeContract,
-        token: tokenContract
+        token: tokenContract,
+        nft:nftContract
       });
 
       // Fetch initial token balance
@@ -272,6 +280,18 @@ const getContractTokenBalance = async () => {
     return "0";
   }
 };
+const getEnrolledStudents = async (courseId) => {
+  const skillBridgeMainContract=contracts.skillBridge
+  if (!skillBridgeMainContract) return [];
+  try {
+    const students = await skillBridgeMainContract.getEnrolledStudents(courseId);
+    return students;
+  } catch (err) {
+    console.error("Failed to fetch enrolled students", err);
+    return [];
+  }
+};
+
 
 const buyTokens = async (tokenAmount) => {
   try {
@@ -651,10 +671,10 @@ const transferTokens = async (to, amount) => {
     }
   };
   const markCourseAsCompleted = async (courseId, resultCID) => {
-    if (!skillBridgeMainContract || !account) return;
-  
+    if (!contracts.skillBridge || !account) return;
+    console.log("this is courseid and resultcid",courseId,resultCID)
     try {
-      const tx = await skillBridgeMainContract.completeCourse(courseId, resultCID);
+      const tx = await contracts.skillBridge.completeCourse(courseId, resultCID);
       await tx.wait();
       console.log(`Course ${courseId} marked as completed with result CID ${resultCID}`);
     } catch (err) {
@@ -734,6 +754,58 @@ const transferTokens = async (to, amount) => {
       return '0';
     }
   };
+  const getUserCertificates = async (account) => {
+    const skillBridgeMainContract = contracts.skillBridge;
+    const skillBridgeNFTContract = contracts.nft;
+  
+    if (!skillBridgeMainContract || !skillBridgeNFTContract || !account) {
+      console.warn("⚠️ Missing contracts or account");
+      return [];
+    }
+  
+    const enrolledCourseIds = await skillBridgeMainContract.getUserEnrolledCourses(account);
+    console.log("📘 Enrolled Courses:", enrolledCourseIds);
+  
+    const nftList = [];
+  
+    for (let courseId of enrolledCourseIds) {
+      try {
+        const nftId = await skillBridgeMainContract.userCourseCertificates(account, courseId);
+        const numericId = Number(nftId);
+    
+        console.log(`NFT ID for course ${courseId}:`, numericId);
+    
+        // ✅ Do not skip ID 0 — allow any valid NFT
+        if (numericId >= 0) {
+          const tokenUri = await skillBridgeNFTContract.tokenURI(numericId);
+          const ipfsCid = tokenUri.includes("ipfs/") ? tokenUri.split("ipfs/")[1] : tokenUri;
+          const metadata = await axios.get(`https://gateway.pinata.cloud/ipfs/${ipfsCid}`);
+          console.log("this is metadata",metadata);
+          const courseAttr = metadata.data.attributes?.find(attr => attr.trait_type === "Course")?.value;
+          const dateAttr = metadata.data.attributes?.find(attr => attr.trait_type === "Date")?.value;
+          const displayDate = dateAttr ? new Date(dateAttr).toLocaleDateString() : "Date Unavailable";
+
+          nftList.push({
+            id: nftId.toString(),
+            name: metadata.data.name || "SkillBridge Certificate",
+            course: courseAttr || `Course #${courseId}`,
+            date: displayDate,
+            uri: tokenUri,
+            image: metadata.data.image // optional: for showing certificate image
+          });
+
+          
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch NFT for course:", courseId, err);
+      }
+    }
+    
+    
+  
+    return nftList;
+  };
+  
 
   // Auto-refresh token balance periodically
   useEffect(() => {
@@ -815,7 +887,7 @@ const transferTokens = async (to, amount) => {
 
     checkConnection();
   }, []);
-
+ 
   const value = {
     // State
     account,
@@ -855,7 +927,9 @@ const transferTokens = async (to, amount) => {
     getCourseQuiz,
     buyTokens,
     transferTokens,
-    markCourseAsCompleted
+    markCourseAsCompleted,
+    getEnrolledStudents,
+    getUserCertificates
   };
 
   return (
