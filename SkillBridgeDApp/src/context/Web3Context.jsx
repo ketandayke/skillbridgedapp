@@ -45,6 +45,7 @@ export const Web3Provider = ({ children }) => {
   const [chainId, setChainId] = useState(null);
   const [tokenBalance, setTokenBalance] = useState('0'); // Added token balance state
   const [isConnected, setIsConnected] = useState(false);
+  const [contractsLoaded, setContractsLoaded] = useState(false);
 
 
   // Initialize Web3
@@ -68,70 +69,146 @@ export const Web3Provider = ({ children }) => {
   };
 
   // Connect wallet
-  const connectWallet = async () => {
-    setLoading(true);
-    try {
-      if (!provider) {
-        await initializeWeb3();
-      }
+  // Updated sections of Web3Context.jsx
 
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts',
-      });
+// In connectWallet function - FIXED VERSION
+const connectWallet = async () => {
+  setLoading(true);
+  try {
+    if (!provider) {
+      await initializeWeb3();
+    }
 
-      if (accounts.length > 0) {
-        setAccount(accounts[0]);
-        setIsConnected(true);
-        const web3Provider = provider || new ethers.BrowserProvider(window.ethereum);
-        const web3Signer = await web3Provider.getSigner();
-        setSigner(web3Signer);
-        
-        // Initialize contracts
+    const accounts = await window.ethereum.request({
+      method: 'eth_requestAccounts',
+    });
+
+    if (accounts.length > 0) {
+      setAccount(accounts[0]);
+      setIsConnected(true);
+
+      const web3Provider = provider || new ethers.BrowserProvider(window.ethereum);
+      const web3Signer = await web3Provider.getSigner();
+      setSigner(web3Signer);
+
+      // ✅ Wait for contracts to be fully initialized
+      try {
         await initializeContracts(web3Signer);
-        
-        toast.success('Wallet connected successfully!');
-        return accounts[0];
+        // ✅ Only set contractsLoaded to true if initialization succeeds
+        setContractsLoaded(true);
+        console.log("✅ Contracts successfully initialized");
+      } catch (contractError) {
+        console.error("❌ Contract initialization failed:", contractError);
+        setContractsLoaded(false);
+        throw new Error("Failed to initialize contracts");
       }
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
-      toast.error('Failed to connect wallet');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  // Initialize contracts
-  const initializeContracts = async (web3Signer) => {
+      toast.success('Wallet connected successfully!');
+      return accounts[0];
+    }
+  } catch (error) {
+    console.error('Failed to connect wallet:', error);
+    setContractsLoaded(false); // ✅ Reset on error
+    toast.error('Failed to connect wallet');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Updated initializeContracts function - FIXED VERSION
+const initializeContracts = async (web3Signer) => {
+  try {
+    console.log("🔄 Initializing contracts...");
+    
+    const skillBridgeContract = new ethers.Contract(
+      CONTRACT_ADDRESSES.SKILLBRIDGE_MAIN,
+      SKILLBRIDGE_ABI.abi,
+      web3Signer
+    );
+
+    const tokenContract = new ethers.Contract(
+      CONTRACT_ADDRESSES.SKILLBRIDGE_TOKEN,
+      TOKEN_ABI.abi,
+      web3Signer
+    );
+    
+    const nftContract = new ethers.Contract(
+      CONTRACT_ADDRESSES.SKILLBRIDGE_NFT,
+      NFT_ABI.abi,
+      web3Signer
+    );
+
+    // ✅ Test contract connections before setting state
     try {
-      const skillBridgeContract = new ethers.Contract(
-        CONTRACT_ADDRESSES.SKILLBRIDGE_MAIN,
-        SKILLBRIDGE_ABI.abi,
-        web3Signer
-      );
+      await skillBridgeContract.getAddress();
+      await tokenContract.getAddress();
+      await nftContract.getAddress();
+      console.log("✅ All contracts connected successfully");
+    } catch (testError) {
+      console.error("❌ Contract connection test failed:", testError);
+      throw new Error("Contract connection failed");
+    }
 
-      const tokenContract = new ethers.Contract(
-        CONTRACT_ADDRESSES.SKILLBRIDGE_TOKEN,
-        TOKEN_ABI.abi,
-        web3Signer
-      );
-      const nftContract= new ethers.Contract(
-        CONTRACT_ADDRESSES.SKILLBRIDGE_NFT,
-        NFT_ABI.abi,
-        web3Signer
-      )
+    setContracts({
+      skillBridge: skillBridgeContract,
+      token: tokenContract,
+      nft: nftContract
+    });
 
-      setContracts({
-        skillBridge: skillBridgeContract,
-        token: tokenContract,
-        nft:nftContract
-      });
-
-      // Fetch initial token balance
+    // Fetch initial token balance
+    try {
       await refreshTokenBalance(tokenContract, web3Signer.address);
-    } catch (error) {
-      console.error('Failed to initialize contracts:', error);
+    } catch (balanceError) {
+      console.warn("⚠️ Failed to fetch initial balance:", balanceError);
+      // Don't throw here, balance can be fetched later
+    }
+
+    console.log("✅ Contract initialization completed");
+  } catch (error) {
+    console.error('❌ Failed to initialize contracts:', error);
+    throw error; // Re-throw to be caught by connectWallet
+  }
+};
+
+// Updated useEffect for auto-connection - FIXED VERSION
+useEffect(() => {
+  const checkConnection = async () => {
+    if (window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+          console.log("🔄 Auto-connecting wallet...");
+          
+          const web3Provider = new ethers.BrowserProvider(window.ethereum);
+          setProvider(web3Provider);
+          setAccount(accounts[0]);
+          setIsConnected(true);
+          
+          const web3Signer = await web3Provider.getSigner();
+          setSigner(web3Signer);
+          
+          const network = await web3Provider.getNetwork();
+          setChainId(Number(network.chainId));
+          
+          // ✅ Initialize contracts and set contractsLoaded appropriately
+          try {
+            await initializeContracts(web3Signer);
+            setContractsLoaded(true);
+            console.log("✅ Auto-connection successful");
+          } catch (contractError) {
+            console.error("❌ Auto-connection contract init failed:", contractError);
+            setContractsLoaded(false);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check existing connection:', error);
+        setContractsLoaded(false);
+      }
     }
   };
+
+  checkConnection();
+}, []);
 
   // Disconnect wallet
   const disconnectWallet = () => {
@@ -940,6 +1017,8 @@ const transferTokens = async (to, amount) => {
     chainId,
     tokenBalance,
     isConnected,
+    contractsLoaded,
+
     
     // Functions
     connectWallet,
@@ -972,7 +1051,7 @@ const transferTokens = async (to, amount) => {
     markCourseAsCompleted,
     getEnrolledStudents,
     getUserCertificates,
-    getCertifiatesNFTID
+    getCertifiatesNFTID,
   };
 
   return (

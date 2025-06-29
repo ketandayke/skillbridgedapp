@@ -59,22 +59,22 @@ const CourseAIChat = ({ courseMetadataCid }) => {
   const clearChat = () => setMessages([]);
 
   return (
-    <div className="w-full h-full bg-gray-900 border border-gray-700 rounded-xl p-6 text-white shadow-md">
+    <div className="w-full h-full bg-white border border-gray-200 rounded-xl p-6 text-gray-900 shadow-xl transition duration-300 ease-in-out">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold flex items-center gap-2 text-cyan-400">
+        <h3 className="text-lg font-bold flex items-center gap-2 text-blue-600">
           <Sparkles className="w-5 h-5" /> AI Assistant
         </h3>
         {messages.length > 0 && (
           <button
             onClick={clearChat}
-            className="text-sm text-gray-400 hover:text-red-400 flex items-center gap-1"
+            className="text-sm text-gray-400 hover:text-red-500 flex items-center gap-1"
           >
             <Trash2 className="w-4 h-4" /> Clear
           </button>
         )}
       </div>
 
-      <div className="h-[70%] overflow-y-auto bg-gray-800 rounded-lg p-4 mb-4 space-y-3">
+      <div className="h-[70%] overflow-y-auto bg-gray-50 rounded-lg p-4 mb-4 space-y-3">
         {messages.length === 0 ? (
           <div className="text-gray-400 text-center">
             Ask anything about this course – prerequisites, content, outcomes, and more.
@@ -83,12 +83,12 @@ const CourseAIChat = ({ courseMetadataCid }) => {
           messages.map((msg, idx) => (
             <div key={idx} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[80%] px-4 py-3 rounded-xl text-sm ${
+                className={`max-w-[80%] px-4 py-3 rounded-xl text-sm transition-all duration-300 ease-in-out shadow-md ${
                   msg.type === "user"
-                    ? "bg-cyan-600 text-white rounded-br-none"
+                    ? "bg-blue-100 text-blue-800 rounded-br-none hover:scale-[1.02]"
                     : msg.isError
-                    ? "bg-red-900 text-red-300 border border-red-500"
-                    : "bg-gray-700 text-gray-100 border border-gray-600 rounded-bl-none"
+                    ? "bg-red-100 text-red-600 border border-red-300"
+                    : "bg-gray-100 text-gray-800 border border-gray-200 rounded-bl-none hover:scale-[1.02]"
                 }`}
               >
                 <div className="whitespace-pre-wrap">{msg.text}</div>
@@ -104,7 +104,7 @@ const CourseAIChat = ({ courseMetadataCid }) => {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-gray-700 px-4 py-3 rounded-xl border border-gray-600 animate-pulse">
+            <div className="bg-gray-100 px-4 py-3 rounded-xl border border-gray-300 animate-pulse shadow">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
@@ -124,20 +124,19 @@ const CourseAIChat = ({ courseMetadataCid }) => {
           onKeyDown={handleKeyPress}
           placeholder="Ask about outcomes, skills, topics..."
           disabled={loading}
-          className="flex-1 bg-gray-800 border border-gray-600 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          className="flex-1 bg-white border border-gray-300 text-gray-800 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           onClick={askQuestion}
           disabled={loading || !question.trim()}
-          className="bg-cyan-600 hover:bg-cyan-700 px-5 py-3 rounded-lg text-white font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 px-5 py-3 rounded-lg text-white font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed shadow"
         >
           {loading ? "..." : "Ask"}
         </button>
       </div>
 
-      <p className="text-xs text-gray-500 mt-2">
-        Press <span className="font-semibold text-cyan-400">Enter</span> to send •{" "}
-        <span className="font-semibold text-cyan-400">Shift+Enter</span> for newline
+      <p className="text-xs text-gray-400 mt-2">
+        Press <span className="font-semibold text-blue-500">Enter</span> to send • <span className="font-semibold text-blue-500">Shift+Enter</span> for newline
       </p>
     </div>
   );

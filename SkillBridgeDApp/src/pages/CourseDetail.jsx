@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Play, Lock, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Play, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useParams, useNavigate } from "react-router-dom";
 import { useWeb3 } from '../context/Web3Context';
 import IngestVectorButton from "../components/IngestVectorButton";
@@ -10,8 +10,18 @@ import { fetchTextFromCid } from '../utils/ipfsFetcher';
 const CourseDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  // State management
+
+  const {
+    getCourseDetails,
+    hasAccessToCourse,
+    account,
+    enrollInCourse,
+    getCertifiatesNFTID,
+    contractsLoaded,
+  } = useWeb3();
+
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
   const [courseData, setCourseData] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [userTokens, setUserTokens] = useState(250);
@@ -24,16 +34,12 @@ const CourseDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const { getCourseDetails, hasAccessToCourse, account, enrollInCourse, getCertifiatesNFTID } = useWeb3();
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-  // Memoized functions to prevent unnecessary re-renders
   const getDifficultyColor = useCallback((difficulty) => {
     switch (difficulty) {
-      case 'Beginner': return 'text-green-400';
-      case 'Intermediate': return 'text-yellow-400';
-      case 'Advanced': return 'text-red-400';
-      default: return 'text-gray-400';
+      case 'Beginner': return 'text-green-600 border-green-500';
+      case 'Intermediate': return 'text-yellow-600 border-yellow-500';
+      case 'Advanced': return 'text-red-600 border-red-500';
+      default: return 'text-gray-500 border-gray-400';
     }
   }, []);
 
@@ -48,154 +54,143 @@ const CourseDetail = () => {
   const handleGoToProfile = useCallback(() => {
     navigate("/profile");
   }, [navigate]);
+  console.log("this is contrract loaded",contractsLoaded);
+  // Updated loadCourse function in CourseDetail.jsx
 
-  // Optimized course loading with error handling and loading states
-  const loadCourse = useCallback(async () => {
-    if (!id || !account) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
+const loadCourse = useCallback(async () => {
+  // ✅ Add timeout/fallback logic
+  if (!id) {
+    setError("Course ID is missing");
+    setLoading(false);
+    return;
+  }
 
-      // Parallel API calls for better performance
-      const [details, enrolled, nftId] = await Promise.all([
-        getCourseDetails(id),
-        hasAccessToCourse(account, id),
-        getCertifiatesNFTID({ account, courseId: id })
-      ]);
+  if (!account) {
+    setError("Please connect your wallet first");
+    setLoading(false);
+    return;
+  }
 
-      setCourseData(details);
-      setIsEnrolled(enrolled);
+  if (!contractsLoaded) {
+    console.log("⏳ Waiting for contracts to load...");
+    return; // Don't set error yet, just wait
+  }
 
-      // Handle completion status
-      if (nftId !== null) {
-        const idBigInt = BigInt(nftId);
-        setHasCompletedCourse(idBigInt >= 0n);
-      } else {
-        setHasCompletedCourse(false);
+  try {
+    setLoading(true);
+    setError(null);
+
+    const [details, enrolled, nftId] = await Promise.all([
+      getCourseDetails(id),
+      hasAccessToCourse(account, id),
+      getCertifiatesNFTID({ account, courseId: id })
+    ]);
+
+    setCourseData(details);
+    setIsEnrolled(enrolled);
+    setHasCompletedCourse(nftId && BigInt(nftId) >= 0n);
+
+    const textPromises = [];
+    if (details.descriptionCid) textPromises.push(fetchTextFromCid(details.descriptionCid).then(t => ['description', t]));
+    if (details.prerequisitesCid) textPromises.push(fetchTextFromCid(details.prerequisitesCid).then(t => ['prerequisites', t]));
+    if (details.learningOutcomesCid) textPromises.push(fetchTextFromCid(details.learningOutcomesCid).then(t => ['outcomes', t]));
+
+    const textResults = await Promise.allSettled(textPromises);
+    textResults.forEach(({ status, value }) => {
+      if (status === 'fulfilled') {
+        const [field, text] = value;
+        if (field === 'description') setDescription(text);
+        if (field === 'prerequisites') setPrerequisites(text);
+        if (field === 'outcomes') setOutcomes(text);
       }
+    });
+  } catch (err) {
+    console.error("Error loading course", err);
+    setError("Failed to load course. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+}, [id, account, contractsLoaded, getCourseDetails, hasAccessToCourse, getCertifiatesNFTID]);
 
-      // Parallel text fetching for better performance
-      const textPromises = [];
-      if (details.descriptionCid) {
-        textPromises.push(fetchTextFromCid(details.descriptionCid).then(text => ['description', text]));
-      }
-      if (details.prerequisitesCid) {
-        textPromises.push(fetchTextFromCid(details.prerequisitesCid).then(text => ['prerequisites', text]));
-      }
-      if (details.learningOutcomesCid) {
-        textPromises.push(fetchTextFromCid(details.learningOutcomesCid).then(text => ['outcomes', text]));
-      }
-
-      // Wait for all text fetches and update state once
-      const textResults = await Promise.allSettled(textPromises);
-      textResults.forEach(result => {
-        if (result.status === 'fulfilled') {
-          const [field, text] = result.value;
-          switch (field) {
-            case 'description':
-              setDescription(text);
-              break;
-            case 'prerequisites':
-              setPrerequisites(text);
-              break;
-            case 'outcomes':
-              setOutcomes(text);
-              break;
-          }
-        }
-      });
-
-    } catch (err) {
-      console.error("Error loading course", err);
-      setError("Failed to load course. Please try again.");
-    } finally {
+// ✅ Add timeout effect to prevent infinite loading
+useEffect(() => {
+  const timeoutId = setTimeout(() => {
+    if (!contractsLoaded && !error) {
+      setError("Contracts are taking too long to load. Please refresh the page.");
       setLoading(false);
     }
-  }, [id, account, getCourseDetails, hasAccessToCourse, getCertifiatesNFTID]);
+  }, 10000); // 10 second timeout
 
-  // Load vector info with debouncing
+  return () => clearTimeout(timeoutId);
+}, [contractsLoaded, error]);
+
   const loadVectorInfo = useCallback(async (metadataCid) => {
     if (!metadataCid) return;
-    
     try {
       const { data } = await axios.get(`${BACKEND_URL}/api/vector/courses/info/${metadataCid}`);
       setVectorInfo(data);
     } catch (err) {
-      console.error("Vector DB info fetch failed", err);
-      // Don't show error to user for vector info, it's not critical
+      console.warn("Vector info fetch failed", err);
     }
   }, [BACKEND_URL]);
 
-  // Optimized enrollment handler
   const handleEnrollment = useCallback(async () => {
-    if (!courseData) return;
-    if (userTokens < courseData.price) {
-      alert(`You need ${courseData.price - userTokens} more tokens to enroll.`);
+    if (!courseData || userTokens < courseData.price) {
+      alert(`You need ${courseData.price - userTokens} more tokens.`);
       return;
     }
-
     try {
       await enrollInCourse(id);
       setIsEnrolled(true);
       setUserTokens(prev => prev - courseData.price);
     } catch (err) {
       console.error("Enrollment failed", err);
-      alert("Enrollment failed. Please try again.");
+      alert("Enrollment failed.");
     }
   }, [courseData, userTokens, enrollInCourse, id]);
 
-  // Effects with proper dependencies
   useEffect(() => {
     loadCourse();
   }, [loadCourse]);
 
   useEffect(() => {
-    if (courseData?.metadataCid) {
-      loadVectorInfo(courseData.metadataCid);
-    }
+    if (courseData?.metadataCid) loadVectorInfo(courseData.metadataCid);
   }, [courseData?.metadataCid, loadVectorInfo]);
 
-  // Memoized components for better performance
-  const enrollmentSection = useMemo(() => (
-    <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 text-center">
-      <h3 className="text-2xl font-bold text-yellow-400 mb-3">{courseData?.price} Tokens</h3>
-      {isEnrolled ? (
-        <div className="flex items-center justify-center bg-green-700/20 text-green-300 py-2 rounded-md">
-          <CheckCircle className="w-5 h-5 mr-2" />
-          Enrolled
-        </div>
-      ) : (
-        <button
-          onClick={handleEnrollment}
-          disabled={userTokens < (courseData?.price || 0)}
-          className={`w-full py-3 mt-2 rounded-lg font-semibold transition-all ${
-            userTokens >= (courseData?.price || 0)
-              ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white hover:from-cyan-600 hover:to-purple-700'
-              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          Enroll Now
-        </button>
-      )}
-    </div>
-  ), [courseData?.price, isEnrolled, userTokens, handleEnrollment]);
+  const enrollmentSection = useMemo(() => {
+    if (!courseData) return null;
+    return (
+      <div className="bg-white shadow-lg p-4 rounded-xl border border-gray-200 text-center transition hover:scale-105">
+        <h3 className="text-2xl font-bold text-cyan-600 mb-3">{courseData?.price} Tokens</h3>
+        {isEnrolled ? (
+          <div className="flex items-center justify-center bg-green-100 text-green-600 py-2 rounded-md">
+            <CheckCircle className="w-5 h-5 mr-2" />
+            Enrolled
+          </div>
+        ) : (
+          <button
+            onClick={handleEnrollment}
+            disabled={userTokens < (courseData?.price || 0)}
+            className={`w-full py-3 mt-2 rounded-lg font-semibold transition-all ${
+              userTokens >= (courseData?.price || 0)
+                ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            Enroll Now
+          </button>
+        )}
+      </div>
+    );
+  }, [courseData, isEnrolled, userTokens, handleEnrollment]);
 
   const completionSection = useMemo(() => {
     if (!isEnrolled) return null;
-
     return hasCompletedCourse ? (
-      <div className="text-center bg-green-800/30 p-6 rounded-xl border border-green-500 mt-4 space-y-3">
-        <h2 className="text-xl font-bold text-green-300">🎉 Congratulations!</h2>
-        <p className="text-green-200">
-          You have successfully completed this course.
-          <br />
-          Your NFT Certificate is available in your <strong>Profile</strong> section.
-        </p>
-        <button
-          onClick={handleGoToProfile}
-          className="mt-3 px-5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold"
-        >
+      <div className="text-center bg-green-50 p-6 rounded-xl border border-green-300 shadow">
+        <h2 className="text-xl font-bold text-green-600">🎉 Congratulations!</h2>
+        <p className="text-green-500 mt-2">You’ve completed the course! Your NFT is in your <strong>Profile</strong>.</p>
+        <button onClick={handleGoToProfile} className="mt-3 px-5 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-semibold transition">
           Go to Profile
         </button>
       </div>
@@ -203,34 +198,32 @@ const CourseDetail = () => {
       <div className="text-center">
         <button
           onClick={handleMarkCompleted}
-          className="mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white font-semibold"
+          className="mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-green-400 to-lime-400 hover:from-green-500 hover:to-lime-500 text-white font-semibold shadow transition-all"
         >
           Mark Completed & Attempt Quiz
         </button>
       </div>
     );
-  }, [isEnrolled, hasCompletedCourse, handleMarkCompleted, handleGoToProfile]);
+  }, [isEnrolled, hasCompletedCourse, handleGoToProfile, handleMarkCompleted]);
 
-  // Loading state
+  // Rendering
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
-        <p className="ml-4">Loading course...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white text-gray-800">
+        <div className="flex items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-cyan-500 border-t-transparent" />
+          <p className="text-lg font-medium">Loading course...</p>
+        </div>
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+      <div className="min-h-screen flex items-center justify-center bg-white text-gray-800">
         <div className="text-center">
-          <p className="text-red-400 mb-4">{error}</p>
-          <button 
-            onClick={loadCourse}
-            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg"
-          >
+          <p className="text-red-500 mb-4">{error}</p>
+          <button onClick={loadCourse} className="px-4 py-2 bg-cyan-600 text-white rounded shadow hover:bg-cyan-700 transition">
             Retry
           </button>
         </div>
@@ -240,27 +233,22 @@ const CourseDetail = () => {
 
   if (!courseData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        <p>Course not found</p>
+      <div className="min-h-screen flex items-center justify-center bg-white text-gray-800">
+        <p>Course not found.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-white to-gray-100 text-gray-800 px-4 py-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <button 
-          onClick={handleBackToCourses} 
-          className="text-gray-400 hover:text-cyan-400 flex items-center"
-        >
+        <button onClick={handleBackToCourses} className="text-black bg-blue-500 hover:text-cyan-600 flex items-center transition">
           <ArrowLeft className="w-5 h-5 mr-2" /> Back to Courses
         </button>
 
-        {/* Video + AI Chat Side-by-Side */}
         {isEnrolled && (
           <div className="h-[600px] flex flex-col lg:flex-row gap-6">
-            {/* Video Section (60%) */}
-            <div className="lg:w-3/5 w-full bg-gray-800 rounded-xl overflow-hidden border border-gray-700">
+            <div className="lg:w-3/5 w-full bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
               {showVideoPlayer ? (
                 <video
                   controls
@@ -269,26 +257,23 @@ const CourseDetail = () => {
                   preload="metadata"
                 />
               ) : (
-                <div className="h-[400px] flex items-center justify-center bg-gradient-to-br from-cyan-600 to-purple-700">
+                <div className="h-[400px] flex items-center justify-center bg-gradient-to-br from-cyan-400 to-blue-500">
                   <button 
                     onClick={() => setShowVideoPlayer(true)} 
-                    className="bg-white/10 p-5 rounded-full border border-white/30 hover:bg-white/20 transition-all"
+                    className="bg-white/20 p-5 rounded-full backdrop-blur-md hover:scale-110 transition-all"
                   >
                     <Play className="w-10 h-10 text-white" />
                   </button>
                 </div>
               )}
-              <div className="space-y-6 sticky top-10">
-                {enrollmentSection}
-              </div>
+              <div className="p-4">{enrollmentSection}</div>
             </div>
 
-            {/* AI Chat Section (40%) */}
-            <div className="lg:w-2/5 w-full h-[600px] bg-gray-800 p-4 rounded-xl border border-gray-700 overflow-y-auto">
+            <div className="lg:w-2/5 w-full h-[600px] bg-white p-4 rounded-xl shadow border border-gray-200 overflow-y-auto">
               {vectorInfo.documentCount === 0 ? (
                 <>
                   <IngestVectorButton courseId={id} courseData={courseData} />
-                  <p className="text-sm text-yellow-300 mt-2">Feed course data to enable AI Chat.</p>
+                  <p className="text-sm text-yellow-500 mt-2">Feed course data to enable AI Chat.</p>
                 </>
               ) : (
                 <CourseAIChat courseMetadataCid={courseData.metadataCid} />
@@ -297,38 +282,32 @@ const CourseDetail = () => {
           </div>
         )}
 
-        {/* Course Information */}
         <div className="space-y-6 mt-6">
-          <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+          <div className="bg-white p-6 rounded-xl shadow border border-gray-200">
             <div className="flex gap-3 mb-3">
               <span className={`text-sm px-3 py-1 rounded-full border ${getDifficultyColor(courseData.difficulty)}`}>
                 {courseData.difficulty}
               </span>
-              <span className="text-sm px-3 py-1 rounded-full border text-indigo-400 border-indigo-400">
+              <span className="text-sm px-3 py-1 rounded-full border text-indigo-500 border-indigo-400">
                 {courseData.category}
               </span>
             </div>
             <h1 className="text-3xl font-bold mb-2">{courseData.title}</h1>
-            {description && (
-              <p className="text-gray-300 whitespace-pre-wrap mb-4">{description}</p>
-            )}
-
+            {description && <p className="text-gray-700 whitespace-pre-wrap mb-4">{description}</p>}
             {prerequisites && (
               <>
-                <h2 className="text-xl font-semibold text-cyan-400 mt-4">Prerequisites</h2>
-                <p className="text-gray-300 whitespace-pre-wrap">{prerequisites}</p>
+                <h2 className="text-xl font-semibold text-cyan-600 mt-4">Prerequisites</h2>
+                <p className="text-gray-700 whitespace-pre-wrap">{prerequisites}</p>
               </>
             )}
-
             {outcomes && (
               <>
-                <h2 className="text-xl font-semibold text-cyan-400 mt-4">Learning Outcomes</h2>
-                <p className="text-gray-300 whitespace-pre-wrap">{outcomes}</p>
+                <h2 className="text-xl font-semibold text-cyan-600 mt-4">Learning Outcomes</h2>
+                <p className="text-gray-700 whitespace-pre-wrap">{outcomes}</p>
               </>
             )}
           </div>
 
-          {/* Completion Section */}
           {completionSection}
         </div>
       </div>

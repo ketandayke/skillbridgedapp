@@ -14,6 +14,7 @@ import {
   Globe
 } from 'lucide-react';
 import Footer from '../components/Footer';
+import HowItWorks from '../components/HowItWorks.jsx';
 
 const Home = () => {
   const { account, connectWallet } = useWeb3();
@@ -65,7 +66,7 @@ const Home = () => {
     <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       
       {/* Hero Section */}
-      <section className="min-h-screen w-full flex items-start pt-12 justify-center px-4  bg-white">
+      <section className="min-h-screen w-full flex items-start pt-12 justify-center px-4 ">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
     
     {/* Text Left */}
@@ -199,7 +200,9 @@ const Home = () => {
             ))}
           </div>
         </div>
+
       </section>
+      <HowItWorks />
 
       {/* Benefits Section */}
       <section className="w-full flex items-center justify-center p-4 py-16">
