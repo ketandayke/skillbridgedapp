@@ -61,52 +61,50 @@ const Home = () => {
   ];
 
   return (
-    <div className="w-full m-0 p-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      
       {/* Hero Section */}
-      <section className="text-center pt-0 pb-12 md:pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <section className="min-h-screen w-full flex items-center justify-center p-4 text-center">
+        <div className="w-full max-w-7xl mx-auto px-4 space-y-6">
           <h1 className="text-5xl md:text-7xl font-extrabold text-slate-800 leading-tight">
             Learn, Earn, and
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              {' '}Certify
-            </span>
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent"> Certify</span>
           </h1>
           <p className="text-xl md:text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed">
             Join the world's first Web3 skill-sharing platform where knowledge pays and certificates are forever.
           </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
-          {account ? (
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
+            {account ? (
+              <Link
+                to="/test"
+                className="group flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                <span>Take Skill Test</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            ) : (
+              <button
+                onClick={connectWallet}
+                className="group flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                <span>Connect Wallet to Start</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            )}
             <Link
-              to="/test"
-              className="group flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              to="/courses"
+              className="flex items-center space-x-3 bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-200 hover:border-slate-300 px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
             >
-              <span>Take Skill Test</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <BookOpen className="w-5 h-5" />
+              <span>Browse Courses</span>
             </Link>
-          ) : (
-            <button
-              onClick={connectWallet}
-              className="group flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              <span>Connect Wallet to Start</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-          )}
-          <Link
-            to="/courses"
-            className="flex items-center space-x-3 bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-200 hover:border-slate-300 px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
-          >
-            <BookOpen className="w-5 h-5" />
-            <span>Browse Courses</span>
-          </Link>
+          </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
+      <section className="w-full flex items-center justify-center p-4">
+        <div className="w-full max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
             <div key={index} className="bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-6 text-center hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1">
               <stat.icon className="w-10 h-10 text-slate-600 mx-auto mb-3" />
@@ -118,12 +116,12 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-16">
+      <section className="w-full flex items-center justify-center p-4 py-16">
+        <div className="w-full max-w-7xl mx-auto px-4 space-y-16">
           <div className="text-center space-y-6">
             <h2 className="text-4xl md:text-5xl font-bold text-slate-800">Why Choose SkillBridge?</h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Experience the future of education with blockchain technology and innovative learning methods
+              Experience the future of education with blockchain technology and innovative learning methods.
             </p>
           </div>
 
@@ -142,8 +140,8 @@ const Home = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-16">
+      <section className="w-full flex items-center justify-center p-4 py-16">
+        <div className="w-full max-w-7xl mx-auto px-4 space-y-16">
           <div className="text-center space-y-6">
             <h2 className="text-4xl md:text-5xl font-bold text-slate-800">How It Works</h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto">Three simple steps to transform your learning journey</p>
@@ -186,8 +184,8 @@ const Home = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <section className="w-full flex items-center justify-center p-4 py-16">
+        <div className="w-full max-w-7xl mx-auto px-4">
           <div className="bg-white/60 backdrop-blur-sm border border-white/50 rounded-3xl p-8 md:p-16 shadow-xl">
             <div className="grid md:grid-cols-2 gap-16 items-center">
               <div className="space-y-8">
@@ -227,8 +225,8 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="max-w-7xl mx-auto">
+      <section className="w-full flex items-center justify-center p-4 py-16">
+        <div className="w-full max-w-7xl mx-auto px-4">
           <div className="text-center space-y-10 bg-gradient-to-r from-slate-800 via-slate-900 to-indigo-900 rounded-3xl p-16 shadow-2xl">
             <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">Ready to Transform Your Learning?</h2>
             <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
