@@ -22,7 +22,7 @@ const NFTCertificate = () => {
 
   if (!metadata) {
     return (
-      <div className="p-10 text-center text-gray-300">
+      <div className="p-10 text-center text-gray-600">
         <p>Loading certificate...</p>
       </div>
     );
@@ -33,29 +33,33 @@ const NFTCertificate = () => {
   const name = metadata.attributes?.find(a => a.trait_type === "Name")?.value;
   const date = metadata.attributes?.find(a => a.trait_type === "Date")?.value;
   const imageUrl = `https://gateway.pinata.cloud/ipfs/${metadata.image?.split("ipfs://")[1]}`;
-
   const linkedinShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=https://yourdapp.com/certificate/${cid}`;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 text-white text-center">
-      <h1 className="text-3xl font-bold mb-4 text-purple-400">{metadata.name}</h1>
-      <img src={imageUrl} alt="Certificate" className="w-full rounded shadow-lg mb-6" />
+    <div className="max-w-3xl mx-auto p-6 text-center bg-white rounded-xl shadow-md mt-8 border border-gray-200">
+      <h1 className="text-3xl font-bold mb-4 text-gray-800">{metadata.name}</h1>
       
-      <div className="bg-gray-800 p-4 rounded-lg border border-purple-600 mb-6">
+      <img
+        src={imageUrl}
+        alt="Certificate"
+        className="w-full rounded-lg shadow-lg mb-6 border border-gray-300"
+      />
+
+      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6 text-left text-gray-800">
         <p><strong>Recipient:</strong> {name}</p>
         <p><strong>Course:</strong> {course}</p>
         <p><strong>Score:</strong> {score}</p>
         <p><strong>Date:</strong> {new Date(date).toLocaleDateString()}</p>
-        <p className="mt-2 text-gray-400">{metadata.description}</p>
+        <p className="mt-2 text-gray-600">{metadata.description}</p>
       </div>
 
       <a
         href={linkedinShareUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition"
+        className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
       >
-        <ExternalLink size={16} className="mr-2" />
+        <ExternalLink size={18} />
         Share on LinkedIn
       </a>
     </div>
