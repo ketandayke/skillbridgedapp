@@ -19,6 +19,8 @@ const Courses = () => {
   const [loading, setLoading] = useState(true);
   const [tokenLoading, setTokenLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
+  const [loadingCourseId, setLoadingCourseId] = useState(null);
+
 
   const categories = [
     { id: 'all', name: 'All Courses', icon: BookOpen },
@@ -113,7 +115,7 @@ const Courses = () => {
       alert("Not enough tokens to enroll");
       return;
     }
-
+    setLoadingCourseId(courseId);
     setTokenLoading(true);
     try {
       await enrollInCourse(courseId);
@@ -158,7 +160,7 @@ const Courses = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-800">
+    <div className="min-h-screen bg-gradient-to-r from-slate-800 via-slate-900 to-indigo-900">
       {/* Header */}
       <div className="sticky top-0 bg-white/80 backdrop-blur border-b z-40 px-6 py-6">
         <div className="flex justify-between items-center mb-6">
@@ -175,7 +177,7 @@ const Courses = () => {
             </div>
             <button
               onClick={handleRefresh}
-              className="border border-gray-300 px-4 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-100"
+              className="border border-gray-300 px-4 py-2 rounded-full text-sm bg-white text-gray-600 hover:bg-gray-100"
             >
               ⟳ Refresh
             </button>
@@ -212,12 +214,13 @@ const Courses = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
                 {sortedCourses.map(course => (
                   <CourseCard
-                    key={course.courseId}
-                    course={course}
-                    userTokens={userTokens}
-                    tokenLoading={tokenLoading}
-                    onEnroll={handleEnrollCourse}
-                  />
+                  key={course.courseId}
+                  course={course}
+                  userTokens={userTokens}
+                  onEnroll={handleEnrollCourse}
+                  loadingCourseId={loadingCourseId}
+                />
+                
                 ))}
               </div>
             ) : (

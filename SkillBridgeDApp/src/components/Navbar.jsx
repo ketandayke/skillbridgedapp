@@ -50,8 +50,8 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-black/20 backdrop-blur-lg border-b border-white/10">
-      <div className="container mx-auto px-4">
+    <nav className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 backdrop-blur-lg border-b border-white/10">
+      <div className="container mx-auto px-4  ">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">

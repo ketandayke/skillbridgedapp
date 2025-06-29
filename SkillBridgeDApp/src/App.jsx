@@ -21,7 +21,7 @@ function MainContent() {
   const isDashboard = location.pathname === '/dashboard';
   
   return (
-    <main className={`w-full ${isDashboard ? 'py-8' : 'px-4 py-8'}`}>
+    <main>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/test" element={<Test />} />
@@ -42,7 +42,7 @@ function App() {
   return (
     <Web3Provider>
       <Router>
-        <div className="app-container min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
+        <div className="app-container min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 text-black">
           <Navbar />
           <MainContent />
           <Toaster 
