@@ -1,20 +1,18 @@
-// src/pages/Home.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
-import { 
-  BookOpen, 
-  Award, 
-  Coins, 
-  Users, 
-  ArrowRight, 
+import {
+  BookOpen,
+  Award,
+  Coins,
+  Users,
+  ArrowRight,
   CheckCircle,
   Star,
   TrendingUp,
   Shield,
   Globe
 } from 'lucide-react';
-import Loader from '../components/Loader';
 
 const Home = () => {
   const { account, connectWallet } = useWeb3();
@@ -24,25 +22,25 @@ const Home = () => {
       icon: Coins,
       title: 'Earn While Learning',
       description: 'Take skill tests and earn platform tokens based on your performance.',
-      gradient: 'from-yellow-400 to-orange-500'
+      gradient: 'from-emerald-500 to-teal-600'
     },
     {
       icon: BookOpen,
       title: 'Quality Courses',
       description: 'Access premium courses from expert instructors worldwide.',
-      gradient: 'from-blue-400 to-purple-500'
+      gradient: 'from-blue-500 to-indigo-600'
     },
     {
       icon: Award,
       title: 'NFT Certificates',
       description: 'Earn blockchain-verified certificates as NFTs upon course completion.',
-      gradient: 'from-green-400 to-teal-500'
+      gradient: 'from-amber-500 to-orange-600'
     },
     {
       icon: Users,
       title: 'Global Community',
       description: 'Connect with learners and instructors from around the world.',
-      gradient: 'from-pink-400 to-red-500'
+      gradient: 'from-violet-500 to-purple-600'
     }
   ];
 
@@ -63,42 +61,42 @@ const Home = () => {
   ];
 
   return (
-    <div className="space-y-20">
+    <div className="w-full m-0 p-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Hero Section */}
-      <section className="text-center space-y-8">
-        <div className="space-y-4">
-          <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
+      <section className="text-center pt-0 pb-12 md:pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-800 leading-tight">
             Learn, Earn, and
-            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               {' '}Certify
             </span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
+          <p className="text-xl md:text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed">
             Join the world's first Web3 skill-sharing platform where knowledge pays and certificates are forever.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
           {account ? (
             <Link
               to="/test"
-              className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 transform hover:scale-105"
+              className="group flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               <span>Take Skill Test</span>
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           ) : (
             <button
               onClick={connectWallet}
-              className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 transform hover:scale-105"
+              className="group flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               <span>Connect Wallet to Start</span>
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           )}
           <Link
             to="/courses"
-            className="flex items-center space-x-2 border-2 border-white/20 hover:border-white/40 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-200 hover:bg-white/10"
+            className="flex items-center space-x-3 bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-200 hover:border-slate-300 px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
           >
             <BookOpen className="w-5 h-5" />
             <span>Browse Courses</span>
@@ -107,154 +105,161 @@ const Home = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-white/10 backdrop-blur-lg rounded-xl p-6 text-center">
-            <stat.icon className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-white">{stat.value}</div>
-            <div className="text-gray-300">{stat.label}</div>
-          </div>
-        ))}
-      </section>
-
-      {/* Features Section */}
-      <section className="space-y-12">
-        <div className="text-center space-y-4">
-          <h2 className="text-4xl font-bold text-white">Why Choose SkillBridge?</h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Experience the future of education with blockchain technology
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8">
-          {features.map((feature, index) => (
-            <div key={index} className="bg-white/10 backdrop-blur-lg rounded-xl p-8 hover:bg-white/15 transition-all duration-200">
-              <div className={`w-12 h-12 bg-gradient-to-r ${feature.gradient} rounded-lg flex items-center justify-center mb-4`}>
-                <feature.icon className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-              <p className="text-gray-300">{feature.description}</p>
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
+          {stats.map((stat, index) => (
+            <div key={index} className="bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-6 text-center hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1">
+              <stat.icon className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+              <div className="text-3xl font-bold text-slate-800 mb-1">{stat.value}</div>
+              <div className="text-slate-600 font-medium">{stat.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="space-y-12">
-        <div className="text-center space-y-4">
-          <h2 className="text-4xl font-bold text-white">How It Works</h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Simple steps to start your learning journey
-          </p>
+      {/* Features Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-16">
+          <div className="text-center space-y-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-800">Why Choose SkillBridge?</h2>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              Experience the future of education with blockchain technology and innovative learning methods
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="group bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-8 hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-2">
+                <div className={`w-14 h-14 bg-gradient-to-r ${feature.gradient} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-800 mb-3">{feature.title}</h3>
+                <p className="text-slate-600 leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
+      </section>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto">
-              <span className="text-white font-bold text-xl">1</span>
-            </div>
-            <h3 className="text-xl font-bold text-white">Take Assessment</h3>
-            <p className="text-gray-300">
-              Complete our skill assessment test and earn tokens based on your performance.
-            </p>
+      {/* How It Works Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-16">
+          <div className="text-center space-y-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-800">How It Works</h2>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">Three simple steps to transform your learning journey</p>
           </div>
 
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto">
-              <span className="text-white font-bold text-xl">2</span>
-            </div>
-            <h3 className="text-xl font-bold text-white">Enroll in Courses</h3>
-            <p className="text-gray-300">
-              Use your earned tokens to enroll in courses that match your interests and goals.
-            </p>
-          </div>
-
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-red-600 rounded-full flex items-center justify-center mx-auto">
-              <span className="text-white font-bold text-xl">3</span>
-            </div>
-            <h3 className="text-xl font-bold text-white">Earn NFT Certificate</h3>
-            <p className="text-gray-300">
-              Complete courses and quizzes to earn blockchain-verified NFT certificates.
-            </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                number: 1,
+                title: 'Take Assessment',
+                desc: 'Complete our comprehensive skill assessment and earn tokens based on your expertise level.',
+                colors: 'from-blue-500 to-indigo-600'
+              },
+              {
+                number: 2,
+                title: 'Enroll in Courses',
+                desc: 'Use your earned tokens to access premium courses tailored to your learning goals.',
+                colors: 'from-purple-500 to-pink-600'
+              },
+              {
+                number: 3,
+                title: 'Earn NFT Certificate',
+                desc: 'Complete courses and receive blockchain-verified NFT certificates that prove your skills.',
+                colors: 'from-emerald-500 to-teal-600'
+              }
+            ].map((step, index) => (
+              <div key={index} className="text-center space-y-6 group">
+                <div className="relative">
+                  <div className={`w-20 h-20 bg-gradient-to-r ${step.colors} rounded-full flex items-center justify-center mx-auto shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}>
+                    <span className="text-white font-bold text-2xl">{step.number}</span>
+                  </div>
+                  <div className={`absolute -inset-4 bg-gradient-to-r ${step.colors}/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-800">{step.title}</h3>
+                <p className="text-slate-600 leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Benefits Section */}
-      <section className="bg-white/5 backdrop-blur-lg rounded-2xl p-8 md:p-12">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">
-              The Future of Education is Here
-            </h2>
-            <p className="text-gray-300 text-lg">
-              SkillBridge combines the best of traditional education with cutting-edge blockchain technology to create a truly revolutionary learning experience.
-            </p>
-            <div className="space-y-3">
-              {benefits.map((benefit, index) => (
-                <div key={index} className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  <span className="text-white">{benefit}</span>
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white/60 backdrop-blur-sm border border-white/50 rounded-3xl p-8 md:p-16 shadow-xl">
+            <div className="grid md:grid-cols-2 gap-16 items-center">
+              <div className="space-y-8">
+                <h2 className="text-4xl md:text-5xl font-bold text-slate-800 leading-tight">
+                  The Future of Education is Here
+                </h2>
+                <p className="text-slate-600 text-lg leading-relaxed">
+                  SkillBridge combines traditional educational excellence with cutting-edge blockchain technology to create an unparalleled learning experience.
+                </p>
+                <div className="space-y-4">
+                  {benefits.map((benefit, index) => (
+                    <div key={index} className="flex items-center space-x-4 group">
+                      <CheckCircle className="w-6 h-6 text-emerald-500 group-hover:scale-110 transition-transform" />
+                      <span className="text-slate-700 font-medium">{benefit}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-6 rounded-xl text-center">
-              <Shield className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-              <h4 className="text-white font-semibold">Secure</h4>
-              <p className="text-gray-300 text-sm">Blockchain security</p>
-            </div>
-            <div className="bg-gradient-to-br from-blue-500/20 to-teal-500/20 p-6 rounded-xl text-center">
-              <Globe className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-              <h4 className="text-white font-semibold">Global</h4>
-              <p className="text-gray-300 text-sm">Worldwide access</p>
-            </div>
-            <div className="bg-gradient-to-br from-green-500/20 to-teal-500/20 p-6 rounded-xl text-center">
-              <TrendingUp className="w-8 h-8 text-green-400 mx-auto mb-2" />
-              <h4 className="text-white font-semibold">Rewarding</h4>
-              <p className="text-gray-300 text-sm">Earn while learning</p>
-            </div>
-            <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 p-6 rounded-xl text-center">
-              <Star className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
-              <h4 className="text-white font-semibold">Quality</h4>
-              <p className="text-gray-300 text-sm">Expert instructors</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                {[
+                  { icon: Shield, title: 'Secure', desc: 'Blockchain security', color: 'blue' },
+                  { icon: Globe, title: 'Global', desc: 'Worldwide access', color: 'emerald' },
+                  { icon: TrendingUp, title: 'Rewarding', desc: 'Earn while learning', color: 'violet' },
+                  { icon: Star, title: 'Quality', desc: 'Expert instructors', color: 'amber' }
+                ].map((box, i) => (
+                  <div key={i} className={`group bg-gradient-to-br from-${box.color}-50 to-${box.color}-100 p-8 rounded-2xl text-center hover:from-${box.color}-100 hover:to-${box.color}-200 transition-all duration-300 hover:-translate-y-1`}>
+                    <box.icon className={`w-10 h-10 text-${box.color}-600 mx-auto mb-4 group-hover:scale-110 transition-transform`} />
+                    <h4 className="text-slate-800 font-bold text-lg mb-2">{box.title}</h4>
+                    <p className="text-slate-600 text-sm">{box.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="text-center space-y-8 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-2xl p-12">
-        <h2 className="text-4xl font-bold text-white">Ready to Transform Your Learning?</h2>
-        <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-          Join thousands of learners who are already earning tokens and building their skills on SkillBridge.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {account ? (
-            <>
-              <Link
-                to="/test"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105"
-              >
-                Start Your Journey
-              </Link>
-              <Link
-                to="/courses"
-                className="border-2 border-white/20 hover:border-white/40 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 hover:bg-white/10"
-              >
-                Explore Courses
-              </Link>
-            </>
-          ) : (
-            <button
-              onClick={connectWallet}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105"
-            >
-              Connect Wallet to Get Started
-            </button>
-          )}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center space-y-10 bg-gradient-to-r from-slate-800 via-slate-900 to-indigo-900 rounded-3xl p-16 shadow-2xl">
+            <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">Ready to Transform Your Learning?</h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
+              Join thousands of learners who are already earning tokens and building their skills on SkillBridge.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center pt-4">
+              {account ? (
+                <>
+                  <Link
+                    to="/test"
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-10 py-4 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    Start Your Journey
+                  </Link>
+                  <Link
+                    to="/courses"
+                    className="bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 text-white px-10 py-4 rounded-xl font-bold transition-all duration-300 hover:border-white/40"
+                  >
+                    Explore Courses
+                  </Link>
+                </>
+              ) : (
+                <button
+                  onClick={connectWallet}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-10 py-4 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                >
+                  Connect Wallet to Get Started
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </section>
     </div>
