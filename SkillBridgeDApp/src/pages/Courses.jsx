@@ -8,7 +8,7 @@ import Sidebar from '../components/Courses/Sidebar';
 import SearchAndFilters from '../components/Courses/SearchAndFilter';
 
 const Courses = () => {
-  const { enrollInCourse, account, getAllCourses, hasAccessToCourse, getTokenBalance } = useWeb3();
+  const { enrollInCourse, account, getAllCourses, hasAccessToCourse, getTokenBalance, isConnected, tokenBalance } = useWeb3();
   const navigate = useNavigate();
 
   const [courses, setCourses] = useState([]);
@@ -18,6 +18,7 @@ const Courses = () => {
   const [userTokens, setUserTokens] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tokenLoading, setTokenLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
 
   const categories = [
     { id: 'all', name: 'All Courses', icon: BookOpen },
@@ -60,14 +61,35 @@ const Courses = () => {
     }
   };
 
+  // Initialization effect
   useEffect(() => {
-    fetchCourses();
-  }, [account]);
+    const timer = setTimeout(() => {
+      setInitializing(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
+  // Fetch courses when account and connection are ready
   useEffect(() => {
-    if (account) fetchTokenBalance();
-    else setUserTokens(0);
-  }, [account]);
+    if (!initializing && account && isConnected) {
+      fetchCourses();
+    } else if (!initializing && !account) {
+      setLoading(false);
+      setCourses([]);
+    }
+  }, [account, isConnected, initializing]);
+
+  // Sync token balance from Web3Context
+  useEffect(() => {
+    if (tokenBalance && tokenBalance !== '0') {
+      setUserTokens(parseFloat(tokenBalance));
+    } else if (account && isConnected && !initializing) {
+      // Fallback: fetch balance if context doesn't have it
+      fetchTokenBalance();
+    } else if (!account || !isConnected) {
+      setUserTokens(0);
+    }
+  }, [tokenBalance, account, isConnected, initializing]);
 
   const filteredCourses = courses.filter(course => {
     const matchSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -95,7 +117,7 @@ const Courses = () => {
     setTokenLoading(true);
     try {
       await enrollInCourse(courseId);
-      await fetchTokenBalance();
+      // Token balance will be updated automatically by Web3Context
       await fetchCourses();
     } catch (err) {
       console.error("Enrollment failed:", err);
@@ -105,7 +127,25 @@ const Courses = () => {
     }
   };
 
-  if (!account) {
+  // Manual refresh function
+  const handleRefresh = async () => {
+    if (account && isConnected) {
+      await fetchTokenBalance();
+    }
+  };
+
+  if (initializing) {
+    return (
+      <div className="min-h-screen bg-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4" />
+          <p className="text-white">Initializing...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!account || !isConnected) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center text-center">
         <div>
@@ -134,7 +174,7 @@ const Courses = () => {
               {tokenLoading ? '...' : `${userTokens.toFixed(2)} Tokens`}
             </div>
             <button
-              onClick={fetchTokenBalance}
+              onClick={handleRefresh}
               className="border border-gray-300 px-4 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-100"
             >
               ⟳ Refresh

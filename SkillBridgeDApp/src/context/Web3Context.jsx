@@ -46,6 +46,7 @@ export const Web3Provider = ({ children }) => {
   const [tokenBalance, setTokenBalance] = useState('0'); // Added token balance state
   const [isConnected, setIsConnected] = useState(false);
 
+
   // Initialize Web3
   const initializeWeb3 = async () => {
     if (typeof window.ethereum !== 'undefined') {
