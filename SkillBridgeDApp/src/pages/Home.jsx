@@ -11,7 +11,11 @@ import {
   Star,
   TrendingUp,
   Shield,
-  Globe
+  Globe,
+  UserCheck,
+  GraduationCap,
+  Zap,
+  Wallet
 } from 'lucide-react';
 import Footer from '../components/Footer';
 import HowItWorks from '../components/HowItWorks.jsx';
@@ -47,10 +51,10 @@ const Home = () => {
   ];
 
   const stats = [
-    { label: 'Active Learners', value: '10,000+', icon: Users },
-    { label: 'Courses Available', value: '500+', icon: BookOpen },
-    { label: 'NFTs Minted', value: '25,000+', icon: Award },
-    { label: 'Tokens Distributed', value: '1M+', icon: Coins }
+    { label: 'Active Learners', value: '10,000+', icon: UserCheck },
+    { label: 'Courses Available', value: '500+', icon: GraduationCap },
+    { label: 'NFTs Minted', value: '25,000+', icon: Zap },
+    { label: 'Tokens Distributed', value: '1M+', icon: Wallet }
   ];
 
   const benefits = [
@@ -121,14 +125,21 @@ const Home = () => {
 </section>
 
 
-      {/* Stats Section */}
+      {/* Enhanced Stats Section with Heavy Shadows */}
       <section className="w-full flex items-center justify-center p-4">
-        <div className="w-full max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="w-full max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-6 text-center hover:bg-white/90 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1">
-              <stat.icon className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-              <div className="text-3xl font-bold text-slate-800 mb-1">{stat.value}</div>
-              <div className="text-slate-600 font-medium">{stat.label}</div>
+            <div key={index} className="bg-white/40 backdrop-blur-xl border-2 border-white/60 rounded-2xl p-6 text-center hover:bg-white/60 hover:border-white/80 transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.15)] hover:shadow-[0_30px_80px_rgba(0,0,0,0.25)] hover:-translate-y-3 group">
+              <div className={`w-12 h-12 bg-gradient-to-r ${
+                index === 0 ? 'from-blue-500 to-cyan-500' :
+                index === 1 ? 'from-emerald-500 to-teal-500' :
+                index === 2 ? 'from-amber-500 to-orange-500' :
+                'from-violet-500 to-purple-500'
+              } rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.2)] group-hover:shadow-[0_15px_40px_rgba(0,0,0,0.3)]`}>
+                <stat.icon className="w-6 h-6 text-white drop-shadow-sm" />
+              </div>
+              <div className="text-3xl font-bold text-slate-800 mb-1 drop-shadow-sm">{stat.value}</div>
+              <div className="text-slate-700 font-semibold drop-shadow-sm">{stat.label}</div>
             </div>
           ))}
         </div>
