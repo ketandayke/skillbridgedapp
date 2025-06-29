@@ -15,9 +15,7 @@ export default function ProfileForm({ profile, setProfile }) {
     toast.success("Wallet copied!");
   };
 
-  const handleChange = (field, value) => {
-    setForm({ ...form, [field]: value });
-  };
+  const handleChange = (field, value) => setForm({ ...form, [field]: value });
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -31,60 +29,54 @@ export default function ProfileForm({ profile, setProfile }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateUserProfile({
-        ...form,
-        userAvatar, // ✅ include avatar in form data
-      });
-      setProfile({ ...form, avatarCid: form.avatarCid }); // will re-fetch later if needed
+      await updateUserProfile({ ...form, userAvatar });
+      setProfile({ ...form, avatarCid: form.avatarCid });
       toast.success("Profile updated!");
       setIsEditing(false);
-    } catch (err) {
-      console.error("Error saving profile:", err);
+    } catch {
       toast.error("Failed to update profile");
     }
     setSaving(false);
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-8">
+    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow mb-8">
       <div className="flex justify-between items-center mb-4">
-        <div className=''>
-        <div className='flex items-center gap-4'>
-          {
-            form.avatarCid ? (
-              <img
-                src={`https://gateway.pinata.cloud/ipfs/${form.avatarCid}`}
-                alt="Avatar"
-                className="w-24 h-24 rounded-full"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center text-lg text-gray-400">
-                {form.userName?.charAt(0).toUpperCase() || "U"}
-              </div>)
-          }
-          <h2 className="text-2xl font-bold">{form.userName || 'Your Name'}</h2>
-        </div>
-        
-          <div className="flex items-center gap-2 text-sm text-gray-400 mt-1">
-            <Wallet size={16} />
-            <span>{account.slice(0, 6)}...{account.slice(-4)}</span>
-            <button onClick={copyWallet}><Copy size={14} /></button>
+        <div className="flex items-center gap-4">
+          {form.avatarCid ? (
+            <img
+              src={`https://gateway.pinata.cloud/ipfs/${form.avatarCid}`}
+              alt="Avatar"
+              className="w-24 h-24 rounded-full"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-lg text-gray-500">
+              {form.userName?.charAt(0).toUpperCase() || "U"}
+            </div>
+          )}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">{form.userName || 'Your Name'}</h2>
+            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+              <Wallet size={16} />
+              <span>{account.slice(0, 6)}...{account.slice(-4)}</span>
+              <button onClick={copyWallet}><Copy size={14} /></button>
+            </div>
           </div>
         </div>
         {!isEditing ? (
-          <button onClick={() => setIsEditing(true)} className="bg-cyan-600 px-4 py-2 rounded hover:bg-cyan-700">
+          <button onClick={() => setIsEditing(true)} className="bg-cyan-600 px-4 py-2 rounded text-white hover:bg-cyan-700">
             <Edit3 size={16} /> Edit
           </button>
         ) : (
           <div className="flex gap-2">
             <button
               onClick={handleSave}
-              className="bg-green-600 px-4 py-2 rounded hover:bg-green-700"
               disabled={saving}
+              className="bg-green-600 px-4 py-2 rounded text-white hover:bg-green-700"
             >
               <Save size={16} /> {saving ? 'Saving...' : 'Save'}
             </button>
-            <button onClick={() => setIsEditing(false)} className="bg-gray-600 px-4 py-2 rounded hover:bg-gray-700">
+            <button onClick={() => setIsEditing(false)} className="bg-gray-400 px-4 py-2 rounded text-white hover:bg-gray-500">
               <X size={16} /> Cancel
             </button>
           </div>
@@ -94,37 +86,30 @@ export default function ProfileForm({ profile, setProfile }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {['userName', 'email', 'skills', 'city', 'bio'].map((field) => (
           <div key={field}>
-            <label className="block text-sm font-medium mb-1 capitalize">{field}</label>
+            <label className="block text-sm font-medium mb-1 capitalize text-gray-700">{field}</label>
             {isEditing ? (
               <input
                 type="text"
                 value={form[field] || ''}
                 onChange={(e) => handleChange(field, e.target.value)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg"
+                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg"
               />
             ) : (
-              <p className="text-gray-300">{form[field] || 'Not set'}</p>
+              <p className="text-gray-600">{form[field] || 'Not set'}</p>
             )}
           </div>
         ))}
-
-        {/* Avatar Upload */}
-        <div>
-          {isEditing &&(
-            <>
-             <label className="block text-sm font-medium mb-1">Profile Avatar</label>
-
-              <input
-                type="file"
-                accept="image/png, image/jpeg"
-                onChange={handleAvatarChange}
-                className="w-full text-sm text-gray-400"
-              />
-            </>
-           
-          ) 
-          }
-        </div>
+        {isEditing && (
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700">Profile Avatar</label>
+            <input
+              type="file"
+              accept="image/png, image/jpeg"
+              onChange={handleAvatarChange}
+              className="w-full text-sm text-gray-600"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

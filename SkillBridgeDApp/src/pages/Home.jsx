@@ -13,6 +13,7 @@ import {
   Shield,
   Globe
 } from 'lucide-react';
+import Footer from '../components/Footer';
 
 const Home = () => {
   const { account, connectWallet } = useWeb3();
@@ -277,6 +278,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };

@@ -121,9 +121,9 @@ const Profile = () => {
   return (
     <div className="max-w-6xl mx-auto p-6 text-white">
       <div className="flex justify-between items-center mb-8">
-        <div>
+        <div className='text-black'>
           <h1 className="text-3xl font-bold">My Profile</h1>
-          <p className="text-gray-400 mt-1">Manage your SkillBridge account</p>
+          <p className="text-gray-500 mt-1">Manage your SkillBridge account</p>
         </div>
         <button
           onClick={() => navigate('/dashboard')}
@@ -136,25 +136,33 @@ const Profile = () => {
       {/* ✅ Profile Info Form */}
       <ProfileForm profile={profileMetadata} setProfile={setProfileMetadata} />
 
-      {/* 🔢 Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-          <p className="text-sm text-gray-400 mb-1">SBT Tokens</p>
-          <p className="text-2xl font-bold text-yellow-400">{tokenBalance}</p>
-        </div>
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-          <p className="text-sm text-gray-400 mb-1">Courses Completed</p>
-          <p className="text-2xl font-bold text-green-400">{userData?.coursesCompleted || 0}</p>
-        </div>
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-          <p className="text-sm text-gray-400 mb-1">NFTs Earned</p>
-          <p className="text-2xl font-bold text-purple-400">{certificates.length}</p>
-        </div>
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-          <p className="text-sm text-gray-400 mb-1">Test Score</p>
-          <p className="text-2xl font-bold text-cyan-400">{userData?.testScore || 0}/10</p>
-        </div>
+      {/* 🔢 Stats (Light Theme) */}
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      {/* SBT Tokens */}
+      <div className="bg-white p-6 rounded-xl border border-yellow-200 shadow-sm hover:shadow-md transition">
+        <p className="text-sm text-gray-500 mb-1">SBT Tokens</p>
+        <p className="text-2xl font-bold text-yellow-500">{tokenBalance}</p>
       </div>
+
+      {/* Courses Completed */}
+      <div className="bg-white p-6 rounded-xl border border-green-200 shadow-sm hover:shadow-md transition">
+        <p className="text-sm text-gray-500 mb-1">Courses Completed</p>
+        <p className="text-2xl font-bold text-green-500">{userData?.coursesCompleted || 0}</p>
+      </div>
+
+      {/* NFTs Earned */}
+      <div className="bg-white p-6 rounded-xl border border-purple-200 shadow-sm hover:shadow-md transition">
+        <p className="text-sm text-gray-500 mb-1">NFTs Earned</p>
+        <p className="text-2xl font-bold text-purple-600">{certificates.length}</p>
+      </div>
+
+  {/* Test Score */}
+  <div className="bg-white p-6 rounded-xl border border-cyan-200 shadow-sm hover:shadow-md transition">
+    <p className="text-sm text-gray-500 mb-1">Test Score</p>
+    <p className="text-2xl font-bold text-cyan-600">{userData?.testScore || 0}/10</p>
+  </div>
+</div>
+
 
       {/* 🏆 NFT & Achievements */}
       <NFTCollection nfts={certificates} />

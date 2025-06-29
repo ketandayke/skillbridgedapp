@@ -36,7 +36,7 @@ function ActionCard({ icon, title, subtitle, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left p-5 border border-gray-300 rounded-xl bg-white hover:shadow-md hover:border-cyan-500 transition flex gap-3 items-start cursor-pointer"
+      className="w-full text-left p-5 border border-gray-300 rounded-xl bg-gray-100 hover:shadow-lg hover:border-cyan-500 transition flex gap-3 items-start cursor-pointer"
     >
       <div className="mt-1">{icon}</div>
       <div>
