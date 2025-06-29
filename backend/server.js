@@ -6,9 +6,15 @@ import vectorRoutes from "./routes/vector.routes.js"
 import chatRoutes from "./routes/chat.routes.js"
 const app = express();
 dotenv.config();
-const PORT=process.env.PORT||4000;
-app.use(cors());
+const PORT = process.env.PORT || 4000;
+
+const corsOptions = {
+  origin: process.env.CLIENT_ORIGIN || "*",
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
+
 app.get("/",(req,res)=>{
       res.send("this is ketan")
 })
