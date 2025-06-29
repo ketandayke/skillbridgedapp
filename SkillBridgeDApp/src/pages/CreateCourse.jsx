@@ -1,8 +1,8 @@
-import React, { useState,useEffect } from 'react';
-import { Upload, Plus, X, Eye, Save, Video, FileText, Zap, CheckCircle, AlertCircle, Sparkles, Wand2 } from 'lucide-react'; // Added Sparkles and Wand2 for AI button
+import React, { useState, useEffect } from 'react';
+import { Upload, Plus, X, Eye, Save, Video, FileText, Zap, CheckCircle, AlertCircle, Sparkles, Wand2 } from 'lucide-react';
 import FetchQuiz from '../utils/FetchQuiz';
 import { categories } from '../utils/CourseCategories';
-import {uploadCourseContentToIPFS } from '../services/IpfsUploadService';
+import { uploadCourseContentToIPFS } from '../services/IpfsUploadService';
 import { useWeb3 } from '../context/Web3Context';
 import toast from 'react-hot-toast';
 import { ethers } from 'ethers';
@@ -24,10 +24,10 @@ const CreateCourse = () => {
   const [quizData, setQuizData] = useState({
     questions: [
       {
-        id: Date.now(), // Unique ID for manual questions
+        id: Date.now(),
         question: '',
-        options: ['', '', '', ''], // Changed to array of strings
-        correctAnswer: 0, // Index of the correct option (0, 1, 2, or 3)
+        options: ['', '', '', ''],
+        correctAnswer: 0,
         points: 10
       }
     ],
@@ -36,17 +36,14 @@ const CreateCourse = () => {
   });
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false); // New state for AI generation loading
-  const [aiGeneratedQuizPreview, setAiGeneratedQuizPreview] = useState([]); // New state for AI generated questions preview
-  const [showAiQuizGenerator, setShowAiQuizGenerator] = useState(false); // New state to toggle AI section visibility
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
+  const [aiGeneratedQuizPreview, setAiGeneratedQuizPreview] = useState([]);
+  const [showAiQuizGenerator, setShowAiQuizGenerator] = useState(false);
   const { provider, signer, account, connectWallet, contracts } = useWeb3();
   const skillBridgeMainContract = contracts?.skillBridge;
   const tokenContract = contracts?.token;
 
-
   const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
-   
-  
 
   const handleInputChange = (field, value) => {
     setCourseData(prev => ({ ...prev, [field]: value }));
@@ -97,7 +94,7 @@ const CreateCourse = () => {
     setQuizData(prev => ({
       ...prev,
       questions: [...prev.questions, {
-        id: Date.now(), // Unique ID for manual questions
+        id: Date.now(),
         question: '',
         options: ['', '', '', ''],
         correctAnswer: 0,
@@ -106,16 +103,14 @@ const CreateCourse = () => {
     }));
   };
 
-  const removeQuestion = (idToRemove) => { // Modified to remove by ID
+  const removeQuestion = (idToRemove) => {
     setQuizData(prev => ({
       ...prev,
       questions: prev.questions.filter(q => q.id !== idToRemove)
     }));
   };
 
-  // New function to add a specific AI-generated question to the main quizData
   const addAiQuestionToQuiz = (questionToAdd) => {
-    // Transform options object to array and convert answer char to index
     const optionsArray = [
       questionToAdd.options.a,
       questionToAdd.options.b,
@@ -127,14 +122,13 @@ const CreateCourse = () => {
     setQuizData(prev => ({
       ...prev,
       questions: [...prev.questions, {
-        id: questionToAdd._id || Date.now(), // Use AI's ID or generate one
+        id: questionToAdd._id || Date.now(),
         question: questionToAdd.question,
         options: optionsArray,
         correctAnswer: answerIndex,
-        points: 10 // Default points for AI questions
+        points: 10
       }]
     }));
-    // Remove the question from the AI preview list after adding
     setAiGeneratedQuizPreview(prev => prev.filter(q => q._id !== questionToAdd._id));
   };
 
@@ -159,9 +153,8 @@ const CreateCourse = () => {
       ...prev,
       questions: [...prev.questions, ...transformedQuestions]
     }));
-    setAiGeneratedQuizPreview([]); // Clear preview after adding all
+    setAiGeneratedQuizPreview([]);
   };
-
 
   const handleFileUpload = (field, file) => {
     setCourseData(prev => ({ ...prev, [field]: file }));
@@ -189,18 +182,16 @@ const CreateCourse = () => {
     toast.loading("Starting course upload to IPFS and Blockchain...", { id: "course-upload" });
   
     try {
-      // ✅ Step 1: Upload course content to your backend which pins to Pinata/IPFS
       const ipfsMetadataHash = await uploadCourseContentToIPFS(courseData, quizData, setUploadProgress);
       toast.success("All content uploaded to IPFS!", { id: "course-upload" });
-      console.log("this is ipfs metadatahash",ipfsMetadataHash);
-      // ✅ Step 2: Interact with Smart Contract to store course info on-chain
+      
       setUploadProgress(75);
       toast.loading("Confirm transaction in your wallet...", { id: "blockchain-tx" });
   
       const priceInTokens = ethers.parseUnits(courseData.price.toString(), 18);
   
       const tx = await skillBridgeMainContract.createCourse(
-        ipfsMetadataHash, // CID from backend/IPFS
+        ipfsMetadataHash,
         courseData.title,
         priceInTokens,
       );
@@ -213,7 +204,6 @@ const CreateCourse = () => {
       toast.success("Course created successfully on SkillBridge!", { id: "course-upload" });
       toast.dismiss("blockchain-tx");
   
-      // ✅ Reset form after successful publish
       setCourseData({
         title: '',
         description: '',
@@ -246,7 +236,6 @@ const CreateCourse = () => {
     }
   };
   
-  // --- AI Quiz Generation Function ---
   const generateQuestionsWithAi = async () => {
     if (!courseData.category || !courseData.title || !courseData.description || !courseData.difficulty) {
       alert("Please fill in Course Title, Description, Category, and Difficulty in Step 1 before generating AI questions.");
@@ -254,7 +243,7 @@ const CreateCourse = () => {
     }
 
     setIsGeneratingQuiz(true);
-    setAiGeneratedQuizPreview([]); // Clear previous AI results
+    setAiGeneratedQuizPreview([]);
 
     const prompt = `You are a strict JSON API.
     **Generate exactly 10 multiple-choice questions.**
@@ -278,25 +267,13 @@ const CreateCourse = () => {
           "d": "Rome"
         },
         "answer": "c"
-      },
-      {
-        "_id": "unique-uuid-2",
-        "question": "Which programming language is known for its use in web development?",
-        "options": {
-          "a": "Java",
-          "b": "Python",
-          "c": "JavaScript",
-          "d": "C++"
-        },
-        "answer": "c"
       }
     ]`;
 
     try {
       const data = await FetchQuiz({ prompt });
       if (Array.isArray(data)) {
-        console.log("this is quiz data",data);
-        setAiGeneratedQuizPreview(data); // Store AI-generated questions in preview state
+        setAiGeneratedQuizPreview(data);
       } else {
         console.error("AI response was not an array:", data);
         alert("Failed to generate questions. AI did not return a valid format.");
@@ -308,7 +285,6 @@ const CreateCourse = () => {
       setIsGeneratingQuiz(false);
     }
   };
-
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
@@ -349,30 +325,44 @@ const CreateCourse = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-          <select
-            value={courseData.category}
-            onChange={(e) => handleInputChange('category', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">Select category</option>
-            {categories.map(cat => (
-              <option key={cat} value={cat.toLowerCase()}>{cat}</option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={courseData.category}
+              onChange={(e) => handleInputChange('category', e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+            >
+              <option value="">Select category</option>
+              {categories.map(cat => (
+                <option key={cat} value={cat.toLowerCase()}>{cat}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty Level</label>
-          <select
-            value={courseData.difficulty}
-            onChange={(e) => handleInputChange('difficulty', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">Select difficulty</option>
-            {difficulties.map(diff => (
-              <option key={diff} value={diff.toLowerCase()}>{diff}</option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={courseData.difficulty}
+              onChange={(e) => handleInputChange('difficulty', e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+            >
+              <option value="">Select difficulty</option>
+              {difficulties.map(diff => (
+                <option key={diff} value={diff.toLowerCase()}>{diff}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
         </div>
 
         <div>
@@ -546,23 +536,20 @@ const CreateCourse = () => {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Course Quiz</h2>
         <div className="flex space-x-3">
-            {/* Toggle AI Quiz Generator Section */}
-            <button
-                onClick={() => setShowAiQuizGenerator(prev => !prev)}
-                className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-cyan-700 transition-all flex items-center"
-            >
-                <Wand2 className="w-4 h-4 inline mr-1" />
-                {showAiQuizGenerator ? 'Hide AI Generator' : 'AI Quiz Generator'}
-            </button>
-
-            {/* Add Manual Question Button */}
-            <button
-                onClick={addQuestion}
-                className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all flex items-center"
-            >
-                <Plus className="w-4 h-4 inline mr-1" />
-                Add Manual Question
-            </button>
+          <button
+            onClick={() => setShowAiQuizGenerator(prev => !prev)}
+            className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-cyan-700 transition-all flex items-center"
+          >
+            <Wand2 className="w-4 h-4 inline mr-1" />
+            {showAiQuizGenerator ? 'Hide AI Generator' : 'AI Quiz Generator'}
+          </button>
+          <button
+            onClick={addQuestion}
+            className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all flex items-center"
+          >
+            <Plus className="w-4 h-4 inline mr-1" />
+            Add Manual Question
+          </button>
         </div>
       </div>
 
@@ -645,7 +632,6 @@ const CreateCourse = () => {
         </div>
       )}
 
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Passing Score (%)</label>
@@ -673,9 +659,9 @@ const CreateCourse = () => {
           <div key={question.id || qIndex} className="bg-gray-50 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900">Question {qIndex + 1}</h3>
-              {quizData.questions.length > 0 && ( // Allow removing even the first if there are other questions (e.g. from AI)
+              {quizData.questions.length > 0 && (
                 <button
-                  onClick={() => removeQuestion(question.id)} // Use ID for removal
+                  onClick={() => removeQuestion(question.id)}
                   className="text-red-500 hover:text-red-700"
                 >
                   <X className="w-5 h-5" />
@@ -699,7 +685,7 @@ const CreateCourse = () => {
                 <div key={oIndex} className="flex items-center">
                   <input
                     type="radio"
-                    name={`correct-${question.id}`} // Use question.id for unique group for radios
+                    name={`correct-${question.id}`}
                     checked={question.correctAnswer === oIndex}
                     onChange={() => handleQuestionChange(qIndex, 'correctAnswer', oIndex)}
                     className="mr-3 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
@@ -733,18 +719,17 @@ const CreateCourse = () => {
           </div>
         ))}
         {quizData.questions.length === 0 && (
-            <div className="text-center text-gray-500 py-4 border border-dashed border-gray-300 rounded-lg">
-                No quiz questions added yet. Add a manual question or generate some with AI!
-            </div>
+          <div className="text-center text-gray-500 py-4 border border-dashed border-gray-300 rounded-lg">
+            No quiz questions added yet. Add a manual question or generate some with AI!
+          </div>
         )}
       </div>
     </div>
   );
 
-
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <div className=""> {/* <--- Full width applied here */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white rounded-2xl shadow-sm border p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
@@ -791,7 +776,7 @@ const CreateCourse = () => {
 
             <div className="flex space-x-4">
               <button
-                onClick={() => {}} // Placeholder for save draft logic
+                onClick={() => {}}
                 className="px-6 py-3 border bg-cyan-500 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-cyan-700 transition-all"
               >
                 <Save className="w-4 h-4 inline mr-2" />
