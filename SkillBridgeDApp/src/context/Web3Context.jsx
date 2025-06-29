@@ -396,6 +396,9 @@ const buyTokens = async (tokenAmount) => {
 
 // Add this function to check if your contract has enough tokens
 const checkContractTokens = async () => {
+  if(!contracts.skillBridge){
+    return;
+  }
   try {
     const contractAddress = await contracts.skillBridge.getAddress();
     console.log("Contract Address:", contractAddress);
@@ -625,52 +628,58 @@ const transferTokens = async (to, amount) => {
     }
   };
 
-  // Get all courses
-  const getAllCourses = async () => {
-    if (!contracts.skillBridge) return [];
-    try {
-      const nextId = await contracts.skillBridge.nextCourseId();
-      const courses = [];
-  
-      for (let i = 1; i < nextId; i++) {
-        try {
-          const course = await contracts.skillBridge.courses(i);
-          console.log("Course data:", course);
-          
-          const courseId = Number(course[0]);
-          const instructor = course[1];
-          const title = course[2];
-          const price = ethers.formatEther(course[3]);
-          const metadataCID = course[4];
-          const isActive = course[5];
-          const createdAt = new Date(Number(course[6]) * 1000);
-  
-          if (isActive && metadataCID) {
-            const metadataRes = await fetch(`https://gateway.pinata.cloud/ipfs/${metadataCID}`);
-            const metadata = await metadataRes.json();
-  
-            courses.push({
-              courseId,
-              instructor,
-              title,
-              price: parseFloat(price), // Convert to number for easier comparison
-              metadataCID,
-              isActive,
-              createdAt,
-              ...metadata // includes category, description, thumbnail, difficulty, duration, etc.
-            });
+// Get all courses
+    const getAllCourses = async () => {
+      if (!contracts.skillBridge) return [];
+      try {
+        const nextId = await contracts.skillBridge.nextCourseId();
+        const courses = [];
+
+        for (let i = 1; i < nextId; i++) {
+          try {
+            const course = await contracts.skillBridge.courses(i);
+
+            const courseId = Number(course[0]);
+            const instructor = course[1];
+            const title = course[2];
+            const price = ethers.formatEther(course[3]);
+            const metadataCID = course[4];
+            const isActive = course[5];
+            const createdAt = new Date(Number(course[6]) * 1000);
+
+            if (isActive && metadataCID) {
+              // 👇 Fetch metadata
+              const metadataRes = await fetch(`https://gateway.pinata.cloud/ipfs/${metadataCID}`);
+              const metadata = await metadataRes.json();
+
+              // 👇 Get enrolled students count
+              const enrolledStudents = await contracts.skillBridge.getEnrolledStudents(courseId);
+              const enrollmentCount = enrolledStudents.length;
+
+              courses.push({
+                courseId,
+                instructor,
+                title,
+                price: parseFloat(price),
+                metadataCID,
+                isActive,
+                createdAt,
+                enrollmentCount, // ✅ add it here
+                ...metadata
+              });
+            }
+          } catch (error) {
+            console.error(`Failed to fetch course ${i}:`, error);
           }
-        } catch (error) {
-          console.error(`Failed to fetch course ${i}:`, error);
         }
+
+        return courses;
+      } catch (error) {
+        console.error('Failed to get courses:', error);
+        return [];
       }
-  
-      return courses;
-    } catch (error) {
-      console.error('Failed to get courses:', error);
-      return [];
-    }
-  };
+    };
+
   const markCourseAsCompleted = async (courseId, resultCID) => {
     if (!contracts.skillBridge || !account) return;
     console.log("this is courseid and resultcid",courseId,resultCID)

@@ -5,23 +5,23 @@ import { Search } from 'lucide-react';
 export default function SearchAndFilters({ searchTerm, setSearchTerm, sortBy, setSortBy }) {
   return (
     <div className="flex flex-col lg:flex-row gap-4 mb-6">
-      {/* Search */}
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+      {/* Search Box */}
+      <div className="relative flex-1 group">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-indigo-500 transition" />
         <input
           type="text"
           placeholder="Search courses..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full pl-12 pr-4 py-3 rounded-xl bg-white text-black shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
         />
       </div>
 
-      {/* Sort */}
+      {/* Sort Dropdown */}
       <select
         value={sortBy}
         onChange={(e) => setSortBy(e.target.value)}
-        className="px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="px-4 py-3 rounded-xl bg-white text-black border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
       >
         <option value="popular">Most Popular</option>
         <option value="rating">Highest Rated</option>

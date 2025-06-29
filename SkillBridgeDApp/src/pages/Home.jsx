@@ -64,43 +64,60 @@ const Home = () => {
     <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       
       {/* Hero Section */}
-      <section className="min-h-screen w-full flex items-center justify-center p-4 text-center">
-        <div className="w-full max-w-7xl mx-auto px-4 space-y-6">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-800 leading-tight">
-            Learn, Earn, and
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent"> Certify</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed">
-            Join the world's first Web3 skill-sharing platform where knowledge pays and certificates are forever.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
-            {account ? (
-              <Link
-                to="/test"
-                className="group flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-              >
-                <span>Take Skill Test</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            ) : (
-              <button
-                onClick={connectWallet}
-                className="group flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-              >
-                <span>Connect Wallet to Start</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-            )}
-            <Link
-              to="/courses"
-              className="flex items-center space-x-3 bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-200 hover:border-slate-300 px-10 py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
-            >
-              <BookOpen className="w-5 h-5" />
-              <span>Browse Courses</span>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <section className="min-h-screen w-full flex items-start pt-12 justify-center px-4  bg-white">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+    
+    {/* Text Left */}
+    <div className="space-y-6 text-center md:text-left">
+      <span className="inline-block bg-indigo-100 text-indigo-700 px-3 rounded-full text-sm font-medium shadow">
+        🔗 Powered by Web3 • SkillBridge
+      </span>
+
+      <h1 className="text-5xl md:text-7xl font-extrabold text-slate-800 leading-tight mb-4">
+        Learn, Earn, and
+        <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+          {' '}Certify
+        </span>
+      </h1>
+
+      <p className="text-xl md:text-2xl text-slate-600 max-w-xl leading-relaxed">
+        Join the world's first Web3 skill-sharing platform where knowledge pays and certificates are forever.
+      </p>
+
+      <div className="flex flex-col sm:flex-row gap-4 pt-6 justify-center md:justify-start">
+        {/* Wallet/Button */}
+        {account ? (
+          <Link to="/test" className="group flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl text-lg font-semibold transition hover:scale-105 shadow-lg">
+            <span>Take Skill Test</span>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        ) : (
+          <button onClick={connectWallet} className="group flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl text-lg font-semibold transition hover:scale-105 shadow-lg">
+            <span>Connect Wallet to Start</span>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </button>
+        )}
+
+        <Link to="/courses" className="flex items-center space-x-3 bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-200 hover:border-slate-300 px-8 py-3 rounded-xl text-lg font-semibold transition shadow-md">
+          <BookOpen className="w-5 h-5" />
+          <span>Browse Courses</span>
+        </Link>
+      </div>
+
+      
+    </div>
+
+    {/* Right Visual */}
+    <div className="w-full">
+      <img
+        src="/herosection.png"
+        alt="SkillBridge illustration"
+        className="w-full max-w-lg mx-auto drop-shadow-xl"
+      />
+    </div>
+  </div>
+</section>
+
 
       {/* Stats Section */}
       <section className="w-full flex items-center justify-center p-4">
