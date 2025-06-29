@@ -14,7 +14,7 @@ const BuyTokens = () => {
   const [tokenAmount, setTokenAmount] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const TOKEN_PRICE_ETH = 0.0001; // 1 SBT = 0.0001 ETH
+  const TOKEN_PRICE_ETH = 0.0001;
   const isReady = contracts.skillBridge && account && isConnected && !web3Loading;
 
   const handleBuyTokens = async () => {
@@ -33,7 +33,7 @@ const BuyTokens = () => {
 
     try {
       setLoading(true);
-      await buyTokens(amount); // Pass number of tokens
+      await buyTokens(amount);
       setTokenAmount('');
     } catch (error) {
       console.error('Token purchase failed:', error);
@@ -48,47 +48,47 @@ const BuyTokens = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-gray-900 to-black p-4">
-      <div className="bg-gray-800 shadow-2xl rounded-2xl p-8 w-full max-w-md text-white">
-        <h2 className="text-2xl font-semibold mb-6 text-center">Buy SBT Tokens</h2>
+    <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-white to-slate-100 p-4">
+      <div className="bg-white border border-gray-200 shadow-xl rounded-2xl p-8 w-full max-w-md">
+        <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Buy SBT Tokens</h2>
 
         {!isReady ? (
-          <div className="text-center">
-            <p className="text-yellow-400">Please connect wallet and wait...</p>
+          <div className="text-center text-yellow-500">
+            <p>Please connect wallet and wait...</p>
           </div>
         ) : (
           <>
             <div className="mb-4">
-              <label className="block mb-2 text-sm text-gray-300">Number of Tokens</label>
+              <label className="block mb-2 text-sm text-gray-700">Number of Tokens</label>
               <input
                 type="number"
                 min="1"
                 step="1"
                 value={tokenAmount}
                 onChange={(e) => setTokenAmount(e.target.value)}
-                className="w-full p-3 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 rounded-lg bg-gray-100 text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter number of tokens (e.g. 100)"
               />
               {tokenAmount && (
-                <p className="text-sm text-gray-400 mt-2">
+                <p className="text-sm text-gray-500 mt-2">
                   ≈ {calculateEthCost()} ETH
                 </p>
               )}
             </div>
 
-            <div className="mb-6 p-3 bg-gray-700 rounded">
-              <p className="text-sm text-gray-400">Exchange Rate:</p>
-              <p className="text-sm">1 ETH = 10,000 SBT</p>
-              <p className="text-xs text-gray-400 mt-1">(1 SBT = 0.0001 ETH)</p>
+            <div className="mb-6 p-3 bg-blue-50 border border-blue-100 rounded">
+              <p className="text-sm text-gray-700">Exchange Rate:</p>
+              <p className="text-sm font-medium text-blue-600">1 ETH = 10,000 SBT</p>
+              <p className="text-xs text-gray-500 mt-1">(1 SBT = 0.0001 ETH)</p>
             </div>
 
             <button
               onClick={handleBuyTokens}
               disabled={loading || !tokenAmount || parseInt(tokenAmount) <= 0}
-              className={`w-full py-3 rounded font-medium transition duration-300 ${
+              className={`w-full py-3 rounded-lg font-medium transition duration-300 ${
                 loading || !tokenAmount
-                  ? 'bg-gray-600 cursor-not-allowed text-gray-400'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  ? 'bg-gray-200 cursor-not-allowed text-gray-500'
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md'
               }`}
             >
               {loading 
@@ -96,8 +96,8 @@ const BuyTokens = () => {
                 : `Buy ${tokenAmount || 0} Tokens`}
             </button>
 
-            <div className="mt-4 text-xs text-gray-400">
-              <p>• You will pay {calculateEthCost()} ETH</p>
+            <div className="mt-4 text-xs text-gray-500">
+              <p>• You will pay <strong>{calculateEthCost()} ETH</strong></p>
               <p>• Gas fees apply on top</p>
             </div>
           </>
