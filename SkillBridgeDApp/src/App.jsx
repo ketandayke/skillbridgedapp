@@ -22,6 +22,7 @@ function MainContent() {
   
   return (
     <main>
+    <main>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/test" element={<Test />} />
