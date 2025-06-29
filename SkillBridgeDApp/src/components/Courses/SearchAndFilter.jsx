@@ -1,6 +1,6 @@
 // src/components/Courses/SearchAndFilters.jsx
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 
 export default function SearchAndFilters({ searchTerm, setSearchTerm, sortBy, setSortBy }) {
   return (
@@ -18,16 +18,19 @@ export default function SearchAndFilters({ searchTerm, setSearchTerm, sortBy, se
       </div>
 
       {/* Sort Dropdown */}
-      <select
-        value={sortBy}
-        onChange={(e) => setSortBy(e.target.value)}
-        className="px-4 py-3 rounded-xl bg-white text-black border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-      >
-        <option value="popular">Most Popular</option>
-        <option value="rating">Highest Rated</option>
-        <option value="price-low">Price: Low to High</option>
-        <option value="price-high">Price: High to Low</option>
-      </select>
+      <div className="relative">
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="appearance-none w-full lg:w-auto px-4 py-3 pr-10 rounded-xl bg-white text-black border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition cursor-pointer"
+        >
+          <option value="popular">Most Popular</option>
+          <option value="rating">Highest Rated</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+        </select>
+        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+      </div>
     </div>
   );
 }
