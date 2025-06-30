@@ -7,7 +7,7 @@ import axios from 'axios';
 import ProfileForm from '../components/Profile/ProfileForm';
 import Achievements from '../components/Profile/Achievements';
 import LearningJourney from '../components/Profile/LearningJourney';
-import NFTCollection from '../components/Profile/NFTcollection';
+import NFTCollection from '../components/Profile/NFTCollection';
 
 const Profile = () => {
   const navigate = useNavigate();
