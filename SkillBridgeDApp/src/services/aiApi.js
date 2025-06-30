@@ -18,7 +18,7 @@ export const ingestCourseToVector = async (courseData) => {
   };
   console.log("this is payload",payload);
 
-  await axios.post("http://localhost:4000/api/vector/ingest", payload);
+  await axios.post(`${BASE_URL}/api/vector/ingest`, payload);
 };
 
 
