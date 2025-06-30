@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Play, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Play, CheckCircle, ArrowLeft, BookOpen, Target, Award } from 'lucide-react';
 import { useParams, useNavigate } from "react-router-dom";
 import { useWeb3 } from '../context/Web3Context';
 import IngestVectorButton from "../components/IngestVectorButton";
@@ -36,10 +36,10 @@ const CourseDetail = () => {
 
   const getDifficultyColor = useCallback((difficulty) => {
     switch (difficulty) {
-      case 'Beginner': return 'text-green-600 border-green-500';
-      case 'Intermediate': return 'text-yellow-600 border-yellow-500';
-      case 'Advanced': return 'text-red-600 border-red-500';
-      default: return 'text-gray-500 border-gray-400';
+      case 'Beginner': return 'bg-green-50 text-green-700 border-green-200';
+      case 'Intermediate': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      case 'Advanced': return 'bg-red-50 text-red-700 border-red-200';
+      default: return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   }, []);
 
@@ -54,75 +54,71 @@ const CourseDetail = () => {
   const handleGoToProfile = useCallback(() => {
     navigate("/profile");
   }, [navigate]);
-  console.log("this is contrract loaded",contractsLoaded);
-  // Updated loadCourse function in CourseDetail.jsx
 
-const loadCourse = useCallback(async () => {
-  // ✅ Add timeout/fallback logic
-  if (!id) {
-    setError("Course ID is missing");
-    setLoading(false);
-    return;
-  }
+  const loadCourse = useCallback(async () => {
+    if (!id) {
+      setError("Course ID is missing");
+      setLoading(false);
+      return;
+    }
 
-  if (!account) {
-    setError("Please connect your wallet first");
-    setLoading(false);
-    return;
-  }
+    if (!account) {
+      setError("Please connect your wallet first");
+      setLoading(false);
+      return;
+    }
 
-  if (!contractsLoaded) {
-    console.log("⏳ Waiting for contracts to load...");
-    return; // Don't set error yet, just wait
-  }
+    if (!contractsLoaded) {
+      console.log("⏳ Waiting for contracts to load...");
+      return;
+    }
 
-  try {
-    setLoading(true);
-    setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-    const [details, enrolled, nftId] = await Promise.all([
-      getCourseDetails(id),
-      hasAccessToCourse(account, id),
-      getCertifiatesNFTID({ account, courseId: id })
-    ]);
+      const [details, enrolled, nftId] = await Promise.all([
+        getCourseDetails(id),
+        hasAccessToCourse(account, id),
+        getCertifiatesNFTID({ account, courseId: id })
+      ]);
 
-    setCourseData(details);
-    setIsEnrolled(enrolled);
-    setHasCompletedCourse(nftId && BigInt(nftId) >= 0n);
+      setCourseData(details);
+      setIsEnrolled(enrolled);
+      setHasCompletedCourse(nftId && BigInt(nftId) >= 0n);
 
-    const textPromises = [];
-    if (details.descriptionCid) textPromises.push(fetchTextFromCid(details.descriptionCid).then(t => ['description', t]));
-    if (details.prerequisitesCid) textPromises.push(fetchTextFromCid(details.prerequisitesCid).then(t => ['prerequisites', t]));
-    if (details.learningOutcomesCid) textPromises.push(fetchTextFromCid(details.learningOutcomesCid).then(t => ['outcomes', t]));
+      const textPromises = [];
+      if (details.descriptionCid) textPromises.push(fetchTextFromCid(details.descriptionCid).then(t => ['description', t]));
+      if (details.prerequisitesCid) textPromises.push(fetchTextFromCid(details.prerequisitesCid).then(t => ['prerequisites', t]));
+      if (details.learningOutcomesCid) textPromises.push(fetchTextFromCid(details.learningOutcomesCid).then(t => ['outcomes', t]));
 
-    const textResults = await Promise.allSettled(textPromises);
-    textResults.forEach(({ status, value }) => {
-      if (status === 'fulfilled') {
-        const [field, text] = value;
-        if (field === 'description') setDescription(text);
-        if (field === 'prerequisites') setPrerequisites(text);
-        if (field === 'outcomes') setOutcomes(text);
-      }
-    });
-  } catch (err) {
-    console.error("Error loading course", err);
-    setError("Failed to load course. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-}, [id, account, contractsLoaded, getCourseDetails, hasAccessToCourse, getCertifiatesNFTID]);
-
-// ✅ Add timeout effect to prevent infinite loading
-useEffect(() => {
-  const timeoutId = setTimeout(() => {
-    if (!contractsLoaded && !error) {
-      setError("Contracts are taking too long to load. Please refresh the page.");
+      const textResults = await Promise.allSettled(textPromises);
+      textResults.forEach(({ status, value }) => {
+        if (status === 'fulfilled') {
+          const [field, text] = value;
+          if (field === 'description') setDescription(text);
+          if (field === 'prerequisites') setPrerequisites(text);
+          if (field === 'outcomes') setOutcomes(text);
+        }
+      });
+    } catch (err) {
+      console.error("Error loading course", err);
+      setError("Failed to load course. Please try again.");
+    } finally {
       setLoading(false);
     }
-  }, 10000); // 10 second timeout
+  }, [id, account, contractsLoaded, getCourseDetails, hasAccessToCourse, getCertifiatesNFTID]);
 
-  return () => clearTimeout(timeoutId);
-}, [contractsLoaded, error]);
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!contractsLoaded && !error) {
+        setError("Contracts are taking too long to load. Please refresh the page.");
+        setLoading(false);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timeoutId);
+  }, [contractsLoaded, error]);
 
   const loadVectorInfo = useCallback(async (metadataCid) => {
     if (!metadataCid) return;
@@ -157,62 +153,13 @@ useEffect(() => {
     if (courseData?.metadataCid) loadVectorInfo(courseData.metadataCid);
   }, [courseData?.metadataCid, loadVectorInfo]);
 
-  const enrollmentSection = useMemo(() => {
-    if (!courseData) return null;
-    return (
-      <div className="bg-white shadow-lg p-4 rounded-xl border border-gray-200 text-center transition hover:scale-105">
-        <h3 className="text-2xl font-bold text-cyan-600 mb-3">{courseData?.price} Tokens</h3>
-        {isEnrolled ? (
-          <div className="flex items-center justify-center bg-green-100 text-green-600 py-2 rounded-md">
-            <CheckCircle className="w-5 h-5 mr-2" />
-            Enrolled
-          </div>
-        ) : (
-          <button
-            onClick={handleEnrollment}
-            disabled={userTokens < (courseData?.price || 0)}
-            className={`w-full py-3 mt-2 rounded-lg font-semibold transition-all ${
-              userTokens >= (courseData?.price || 0)
-                ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-600 hover:to-blue-600'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            Enroll Now
-          </button>
-        )}
-      </div>
-    );
-  }, [courseData, isEnrolled, userTokens, handleEnrollment]);
-
-  const completionSection = useMemo(() => {
-    if (!isEnrolled) return null;
-    return hasCompletedCourse ? (
-      <div className="text-center bg-green-50 p-6 rounded-xl border border-green-300 shadow">
-        <h2 className="text-xl font-bold text-green-600">🎉 Congratulations!</h2>
-        <p className="text-green-500 mt-2">You’ve completed the course! Your NFT is in your <strong>Profile</strong>.</p>
-        <button onClick={handleGoToProfile} className="mt-3 px-5 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-semibold transition">
-          Go to Profile
-        </button>
-      </div>
-    ) : (
-      <div className="text-center">
-        <button
-          onClick={handleMarkCompleted}
-          className="mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-green-400 to-lime-400 hover:from-green-500 hover:to-lime-500 text-white font-semibold shadow transition-all"
-        >
-          Mark Completed & Attempt Quiz
-        </button>
-      </div>
-    );
-  }, [isEnrolled, hasCompletedCourse, handleGoToProfile, handleMarkCompleted]);
-
   // Rendering
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-gray-800">
-        <div className="flex items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-cyan-500 border-t-transparent" />
-          <p className="text-lg font-medium">Loading course...</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg flex items-center gap-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-3 border-blue-500 border-t-transparent" />
+          <p className="text-gray-700 font-medium">Loading course...</p>
         </div>
       </div>
     );
@@ -220,10 +167,13 @@ useEffect(() => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-gray-800">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <button onClick={loadCourse} className="px-4 py-2 bg-cyan-600 text-white rounded shadow hover:bg-cyan-700 transition">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center max-w-md">
+          <p className="text-red-600 mb-6 text-lg">{error}</p>
+          <button 
+            onClick={loadCourse} 
+            className="px-6 py-3 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 transition-all font-medium"
+          >
             Retry
           </button>
         </div>
@@ -233,83 +183,192 @@ useEffect(() => {
 
   if (!courseData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-gray-800">
-        <p>Course not found.</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-lg">
+          <p className="text-gray-700 text-lg">Course not found.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-gray-100 text-gray-800 px-4 py-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <button onClick={handleBackToCourses} className="text-black bg-blue-500 hover:text-cyan-600 flex items-center transition">
-          <ArrowLeft className="w-5 h-5 mr-2" /> Back to Courses
-        </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <button 
+            onClick={handleBackToCourses} 
+            className="flex items-center text-gray-600 hover:text-blue-600 transition-colors font-medium"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" /> 
+            Back to Courses
+          </button>
+        </div>
+      </div>
 
-        {isEnrolled && (
-          <div className="h-[600px] flex flex-col lg:flex-row gap-6">
-            <div className="lg:w-3/5 w-full bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
-              {showVideoPlayer ? (
-                <video
-                  controls
-                  className="w-full h-[600px] object-cover"
-                  src={`https://gateway.pinata.cloud/ipfs/${courseData.videoCid}`}
-                  preload="metadata"
-                />
-              ) : (
-                <div className="h-[400px] flex items-center justify-center bg-gradient-to-br from-cyan-400 to-blue-500">
-                  <button 
-                    onClick={() => setShowVideoPlayer(true)} 
-                    className="bg-white/20 p-5 rounded-full backdrop-blur-md hover:scale-110 transition-all"
-                  >
-                    <Play className="w-10 h-10 text-white" />
-                  </button>
-                </div>
-              )}
-              <div className="p-4">{enrollmentSection}</div>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Course Header */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8">
+          <div className="flex flex-wrap gap-3 mb-6">
+            <span className={`px-4 py-2 rounded-full text-sm font-medium border ${getDifficultyColor(courseData.difficulty)}`}>
+              {courseData.difficulty}
+            </span>
+            <span className="px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200">
+              {courseData.category}
+            </span>
+          </div>
+          
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">{courseData.title}</h1>
+          
+          {description && (
+            <p className="text-gray-600 text-lg leading-relaxed whitespace-pre-wrap">{description}</p>
+          )}
+        </div>
+
+        {/* Main Content */}
+        {isEnrolled ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            {/* Video Section */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden h-[600px] flex flex-col">
+                {showVideoPlayer ? (
+                  <video
+                    controls
+                    className="w-full h-full object-cover"
+                    src={`https://gateway.pinata.cloud/ipfs/${courseData.videoCid}`}
+                    preload="metadata"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <button 
+                      onClick={() => setShowVideoPlayer(true)} 
+                      className="bg-white/20 p-6 rounded-full backdrop-blur-md hover:scale-110 transition-all shadow-lg"
+                    >
+                      <Play className="w-12 h-12 text-white" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="lg:w-2/5 w-full h-[600px] bg-white p-4 rounded-xl shadow border border-gray-200 overflow-y-auto">
-              {vectorInfo.documentCount === 0 ? (
-                <>
-                  <IngestVectorButton courseId={id} courseData={courseData} />
-                  <p className="text-sm text-yellow-500 mt-2">Feed course data to enable AI Chat.</p>
-                </>
-              ) : (
-                <CourseAIChat courseMetadataCid={courseData.metadataCid} />
+            {/* AI Chat Section */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[600px]">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200 p-4">
+                <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                  AI Assistant
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">Get instant help with course content</p>
+              </div>
+              
+              <div className="flex-1 overflow-hidden">
+                {vectorInfo.documentCount === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                    <div className="bg-amber-50 p-8 rounded-2xl border-2 border-dashed border-amber-200 max-w-sm">
+                      <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <BookOpen className="w-8 h-8 text-amber-600" />
+                      </div>
+                      <h4 className="font-semibold text-gray-900 mb-3">Setup Required</h4>
+                      <p className="text-sm text-amber-700 mb-4">
+                        Feed course data to enable AI assistance and get instant answers to your questions.
+                      </p>
+                      <IngestVectorButton courseId={id} courseData={courseData} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-full">
+                    <CourseAIChat courseMetadataCid={courseData.metadataCid} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Enrollment Section for Non-enrolled Users */
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="bg-blue-50 p-6 rounded-2xl mb-6">
+                <h3 className="text-3xl font-bold text-blue-600 mb-2">{courseData?.price} Tokens</h3>
+                <p className="text-gray-600">One-time payment for lifetime access</p>
+              </div>
+              
+              <button
+                onClick={handleEnrollment}
+                disabled={userTokens < (courseData?.price || 0)}
+                className={`w-full py-4 rounded-xl font-semibold text-lg transition-all shadow-lg ${
+                  userTokens >= (courseData?.price || 0)
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 hover:shadow-xl'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {userTokens >= (courseData?.price || 0) ? 'Enroll Now' : 'Insufficient Tokens'}
+              </button>
+              
+              {userTokens < (courseData?.price || 0) && (
+                <p className="text-red-500 text-sm mt-3">
+                  You need {courseData.price - userTokens} more tokens to enroll.
+                </p>
               )}
             </div>
           </div>
         )}
 
-        <div className="space-y-6 mt-6">
-          <div className="bg-white p-6 rounded-xl shadow border border-gray-200">
-            <div className="flex gap-3 mb-3">
-              <span className={`text-sm px-3 py-1 rounded-full border ${getDifficultyColor(courseData.difficulty)}`}>
-                {courseData.difficulty}
-              </span>
-              <span className="text-sm px-3 py-1 rounded-full border text-indigo-500 border-indigo-400">
-                {courseData.category}
-              </span>
+        {/* Course Details Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          {/* Prerequisites */}
+          {prerequisites && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+              <div className="flex items-center mb-4">
+                <BookOpen className="w-6 h-6 text-blue-600 mr-3" />
+                <h2 className="text-2xl font-semibold text-gray-900">Prerequisites</h2>
+              </div>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{prerequisites}</p>
             </div>
-            <h1 className="text-3xl font-bold mb-2">{courseData.title}</h1>
-            {description && <p className="text-gray-700 whitespace-pre-wrap mb-4">{description}</p>}
-            {prerequisites && (
-              <>
-                <h2 className="text-xl font-semibold text-cyan-600 mt-4">Prerequisites</h2>
-                <p className="text-gray-700 whitespace-pre-wrap">{prerequisites}</p>
-              </>
-            )}
-            {outcomes && (
-              <>
-                <h2 className="text-xl font-semibold text-cyan-600 mt-4">Learning Outcomes</h2>
-                <p className="text-gray-700 whitespace-pre-wrap">{outcomes}</p>
-              </>
+          )}
+
+          {/* Learning Outcomes */}
+          {outcomes && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+              <div className="flex items-center mb-4">
+                <Target className="w-6 h-6 text-green-600 mr-3" />
+                <h2 className="text-2xl font-semibold text-gray-900">Learning Outcomes</h2>
+              </div>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{outcomes}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Completion Section */}
+        {isEnrolled && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+            {hasCompletedCourse ? (
+              <div className="text-center bg-gradient-to-r from-green-50 to-emerald-50 p-8 rounded-2xl border border-green-200">
+                <Award className="w-16 h-16 text-green-600 mx-auto mb-4" />
+                <h2 className="text-3xl font-bold text-green-700 mb-3">🎉 Congratulations!</h2>
+                <p className="text-green-600 text-lg mb-6">
+                  You've completed the course! Your NFT certificate is waiting in your Profile.
+                </p>
+                <button 
+                  onClick={handleGoToProfile} 
+                  className="px-8 py-4 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-all shadow-lg hover:shadow-xl"
+                >
+                  View Certificate in Profile
+                </button>
+              </div>
+            ) : (
+              <div className="text-center">
+                <h3 className="text-2xl font-semibold text-gray-900 mb-4">Ready to Complete?</h3>
+                <p className="text-gray-600 mb-6">Take the final quiz to earn your course certificate NFT.</p>
+                <button
+                  onClick={handleMarkCompleted}
+                  className="px-8 py-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+                >
+                  Take Final Quiz
+                </button>
+              </div>
             )}
           </div>
-
-          {completionSection}
-        </div>
+        )}
       </div>
     </div>
   );
