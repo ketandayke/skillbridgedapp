@@ -319,7 +319,7 @@ const CreateCourse = () => {
             value={courseData.title}
             onChange={(e) => handleInputChange('title', e.target.value)}
             placeholder="Enter course title"
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-3 border bg-gray-300 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -329,7 +329,7 @@ const CreateCourse = () => {
             <select
               value={courseData.category}
               onChange={(e) => handleInputChange('category', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+              className="w-full px-4 py-3 border bg-gray-300 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
             >
               <option value="">Select category</option>
               {categories.map(cat => (
@@ -350,7 +350,7 @@ const CreateCourse = () => {
             <select
               value={courseData.difficulty}
               onChange={(e) => handleInputChange('difficulty', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+              className="w-full px-4 py-3 border bg-gray-300 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
             >
               <option value="">Select difficulty</option>
               {difficulties.map(diff => (
@@ -374,7 +374,7 @@ const CreateCourse = () => {
               value={courseData.price}
               onChange={(e) => handleInputChange('price', e.target.value)}
               placeholder="0"
-              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-3 border bg-gray-300 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         </div>
@@ -387,7 +387,7 @@ const CreateCourse = () => {
           onChange={(e) => handleInputChange('description', e.target.value)}
           placeholder="Describe what students will learn in this course And add Syllabus properly"
           rows={4}
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full px-4 py-3 border bg-gray-300 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
           minLength={500}
         />
       </div>
@@ -402,7 +402,7 @@ const CreateCourse = () => {
                 value={prereq}
                 onChange={(e) => handleArrayFieldChange('prerequisites', index, e.target.value)}
                 placeholder="Enter prerequisite"
-                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="flex-1 px-4 py-2 border bg-gray-300 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               {index > 0 && (
                 <button
@@ -432,7 +432,7 @@ const CreateCourse = () => {
                 value={outcome}
                 onChange={(e) => handleArrayFieldChange('learningOutcomes', index, e.target.value)}
                 placeholder="What will students learn?"
-                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="flex-1 px-4 py-2 border bg-gray-300 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               {index > 0 && (
                 <button
@@ -525,7 +525,7 @@ const CreateCourse = () => {
           value={courseData.duration}
           onChange={(e) => handleInputChange('duration', e.target.value)}
           placeholder="e.g., 2 hours, 30 minutes"
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full px-4 py-3 border bg-gray-300 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
     </div>
@@ -568,13 +568,13 @@ const CreateCourse = () => {
               value={`Generate 10 multiple-choice questions for the course "${courseData.title}" on ${courseData.category}, aimed at a ${courseData.difficulty} level, based on this description: "${courseData.description}". Each must have a question, 4 options (a-d), and a correct answer (a-d). Respond ONLY with JSON.`}
               rows={5}
               readOnly
-              className="w-full px-4 py-3 border border-blue-200 rounded-xl bg-blue-100 text-blue-800 resize-none"
+              className="w-full px-4 py-3 border bg-gray-300 border-blue-200 rounded-xl bg-blue-100 text-blue-800 resize-none"
             />
           </div>
           <button
             onClick={generateQuestionsWithAi}
             disabled={isGeneratingQuiz || !courseData.category || !courseData.title || !courseData.description || !courseData.difficulty}
-            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="bg-blue-600  px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {isGeneratingQuiz ? (
               <>
@@ -639,7 +639,7 @@ const CreateCourse = () => {
             type="number"
             value={quizData.passingScore}
             onChange={(e) => setQuizData(prev => ({ ...prev, passingScore: parseInt(e.target.value) }))}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-3 border bg-gray-300 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -649,7 +649,7 @@ const CreateCourse = () => {
             type="number"
             value={quizData.timeLimit}
             onChange={(e) => setQuizData(prev => ({ ...prev, timeLimit: parseInt(e.target.value) }))}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-3 border bg-gray-300 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
       </div>
@@ -662,7 +662,7 @@ const CreateCourse = () => {
               {quizData.questions.length > 0 && (
                 <button
                   onClick={() => removeQuestion(question.id)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500 bg-gray-300 hover:text-red-700"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -676,7 +676,7 @@ const CreateCourse = () => {
                 onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
                 placeholder="Enter your question"
                 rows={2}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-4 py-3 border bg-gray-300 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
@@ -695,7 +695,7 @@ const CreateCourse = () => {
                     value={option}
                     onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
                     placeholder={`Option ${oIndex + 1}`}
-                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="flex-1 px-4 py-2 border bg-gray-300 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               ))}
@@ -708,7 +708,7 @@ const CreateCourse = () => {
                   type="number"
                   value={question.points}
                   onChange={(e) => handleQuestionChange(qIndex, 'points', parseInt(e.target.value))}
-                  className="w-20 px-3 py-1 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-20 px-3 py-1 border bg-gray-300 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div className="text-sm text-gray-500">
