@@ -7,14 +7,14 @@ export default function CourseCard({ course, userTokens,onEnroll,loadingCourseId
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden group border border-gray-200 h-[25rem]">
+    <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden group border border-gray-200 h-[30rem]">
       {/* Thumbnail */}
       <div className="h-3/5 relative">
         {course.thumbnailCid ? (
           <img
             src={`https://gateway.pinata.cloud/ipfs/${course.thumbnailCid}`}
             alt={course.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-center"
           />
         ) : (
           <div className="flex items-center justify-center h-full bg-gradient-to-br from-indigo-500 to-purple-600">
