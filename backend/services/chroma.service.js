@@ -4,53 +4,52 @@ import axios from "axios";
 // Configuration
 const CHROMA_TENANT = process.env.CHROMA_TENANT || "default_tenant";
 const CHROMA_DATABASE = process.env.CHROMA_DATABASE || "default_database";
-const CHROMA_BASE_URL = process.env.CHROMA_BASE_URL || "https://chroma-server-production-232e.up.railway.app";
+const CHROMA_BASE_URL = process.env.CHROMA_BASE_URL || "https://chroma-server-production-0940.up.railway.app";
 const CHROMA_API_ROOT = `${CHROMA_BASE_URL}/api/v2/tenants/${CHROMA_TENANT}/databases/${CHROMA_DATABASE}`;
 
 console.log("Chroma API Root:", CHROMA_API_ROOT);
 
 // Helper function to get collection by name (since API uses UUIDs)
+// Helper function
 const getCollectionByName = async (name) => {
     try {
-        const response = await axios.get(`${CHROMA_API_ROOT}/collections`);
-        const collections = response.data;
-        const collection = collections.find(col => col.name === name);
-        if (!collection) {
-            throw new Error(`Collection '${name}' not found`);
-        }
-        return collection;
+      const response = await axios.get(`${CHROMA_API_ROOT}/collections`);
+      const collections = response.data.collections || response.data; // handle both shapes
+      const collection = collections.find(col => col.name === name);
+      if (!collection) {
+        throw new Error(`Collection '${name}' not found`);
+      }
+      return collection;
     } catch (error) {
-        console.error("Error fetching collection:", error.message);
-        throw error;
+      console.error("Error fetching collection:", error.response?.data || error.message);
+      throw error;
     }
-};
-
-// Create a new collection
-export const createCollection = async (name, metadata = null, configuration = null) => {
+  };
+  
+  // Create a new collection
+  export const createCollection = async (name, metadata = null, configuration = null) => {
     try {
-        console.log("Attempting to create collection:", name);
-        
-        const payload = {
-            name,
-            get_or_create: true, // This will get existing collection if it already exists
-        };
-        
-        if (metadata) {
-            payload.metadata = metadata;
-        }
-        
-        if (configuration) {
-            payload.configuration = configuration;
-        }
-        
-        const response = await axios.post(`${CHROMA_API_ROOT}/collections`, payload);
-        console.log(`Collection '${name}' created successfully with ID:`, response.data.id);
-        return response.data;
+      console.log("Attempting to create collection:", name);
+  
+      const payload = { name, get_or_create: true };
+      if (metadata) payload.metadata = metadata;
+      if (configuration) payload.configuration = configuration;
+  
+      console.log("this is payload", payload);
+  
+      const response = await axios.post(`${CHROMA_API_ROOT}/collections`, payload);
+    //   console.log("this is response",response);
+      // handle v2 response
+      const collection = response.data.collection || response.data;
+      console.log("this is collection",collection);
+      console.log(`Collection '${name}' created successfully with ID:`, collection.id);
+      return collection;
     } catch (error) {
-        console.error("Error creating collection:", error.response?.data || error.message);
-        throw error;
+      console.error("Error creating collection:", error.response?.data || error.message);
+      throw error;
     }
-};
+  };
+  
 
 // Add documents to a collection
 export const addDocuments = async (collectionName, documents) => {
